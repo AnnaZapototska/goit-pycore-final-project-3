@@ -1,8 +1,14 @@
 # decorator for major errors
+from unittest import result
+from storage import save_data
+
 def input_error(func):
     def inner(*args, **kwargs):
         try:
-            return func(*args, **kwargs)
+            result = func(*args, **kwargs)
+            book = args[1]
+            save_data(book)
+            return result
         except (ValueError, KeyError, IndexError) as e:
             return str(e)
         except Exception as e:
