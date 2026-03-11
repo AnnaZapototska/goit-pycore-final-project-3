@@ -5,14 +5,14 @@ from storage import save_data
 def input_error(func):
     def inner(*args, **kwargs):
         try:
-            result = func(*args, **kwargs)
-            book = args[1]
-            save_data(book)
-            return result
+            return func(*args, **kwargs)
         except (ValueError, KeyError, IndexError) as e:
             return str(e)
         except Exception as e:
             return "An unexpected error occurred. Please try again."
+        finally:
+            book = args[1]
+            save_data(book)
     return inner
 
 # decorator with user friendly informations
