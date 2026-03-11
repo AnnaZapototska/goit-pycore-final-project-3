@@ -8,12 +8,11 @@ def parse_input(user_input: str):
     return command, args
 
 def main():
-
     book = load_data()
 
     #show avaiable commands first
     print("Welcome to the assistant bot!")
-    print("Available commands: hello, add, change, phone, add-birthday, show-birthday, birthdays, all, exit / close")
+    print("Available commands: hello, add, change, change-email, phone, add-birthday, show-birthday, birthdays, all, exit / close")
     print()
 
     while True:
@@ -35,6 +34,7 @@ COMMANDS = {
     "hello": hello_command,
     "add": add_contact,
     "change": change_command,
+    "change-email": change_email_command,
     "phone": phone_command,
     "add-birthday": add_birthday,
     "show-birthday": show_birthday,
