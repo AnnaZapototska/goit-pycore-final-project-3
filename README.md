@@ -20,3 +20,38 @@ assistant_bot/
     └── decorators.py
 
 
+
+
+# Address functionality
+
+The assistant bot allows managing contact addresses.
+
+Available address commands:
+
+add-address <name>  
+Adds an address to an existing contact.  
+The bot will ask for:
+- street
+- city
+- country
+
+Example:
+add-address John
+
+edit-address <name>  
+Updates the existing address of a contact.
+
+Example:
+edit-address John
+
+show-address <name>  
+Displays the saved address for a contact.
+
+Example:
+show-address John
+
+remove-address <name>  
+Removes the address from a contact.
+
+Example:
+remove-address John

@@ -13,7 +13,7 @@ def input_error(func):
 def require_args(count, usage):
     def decorator(func):
         def wrapper(args, book):
-            if len(args) < count:
+            if len(args) != count:
                 return f"Usage: {usage}"
             return func(args, book)
         return wrapper
