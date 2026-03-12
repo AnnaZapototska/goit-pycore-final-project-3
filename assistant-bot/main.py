@@ -29,8 +29,9 @@ def main():
         result = command_action(args, book)
         print(result)
 
+        save_data(book)
+
         if command in ["exit", "close"]:
-            save_data(book)
             break
 
 
