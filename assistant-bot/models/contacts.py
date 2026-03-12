@@ -107,6 +107,14 @@ class AddressBook(UserDict):
             if record.email and record.email.value == normalized_email:
                 return record
         return None
+    
+    def find_by_phone(self, phone: str):
+        normalized_phone = phone.strip()
+        for record in self.data.values():
+            for phone_obj in record.phones:
+                if phone_obj.value == normalized_phone:
+                    return record
+        return None
 
     def find_by_selector(self, selector: str):
         record = self.find(selector)
@@ -137,6 +145,16 @@ class AddressBook(UserDict):
 
         raise ValueError("Email must be unique.")
 
+    def ensure_phone_unique(self, phone: str, owner_name: str | None = None):
+        existing_record = self.find_by_phone(phone)
+        if existing_record is None:
+            return
+
+        if owner_name is not None and existing_record.name.value == owner_name:
+            return
+
+        raise ValueError("Phone number must be unique.")
+    
     def replace_primary_phone(self, old_phone: str, new_phone: str):
         record = self.find(old_phone)
         if record is None:

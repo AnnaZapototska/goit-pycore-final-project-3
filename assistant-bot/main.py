@@ -48,8 +48,7 @@ def main():
 
         save_data(book)
 
-        if command in ["exit", "close"]:
-            save_data(book)
+        if command in ["exit", "close"] and args == []:
             break
 
 

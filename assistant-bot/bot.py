@@ -4,6 +4,7 @@ from utils.decorators import input_error, require_args
 
 
 @input_error
+@require_args(0, "hello")
 def hello_command(args, book: AddressBook):
     return "How can I help you?"
 
@@ -34,6 +35,12 @@ def add_contact(args, book: AddressBook):
         book.ensure_email_unique(
             validated_email.value,
             owner_phone=record.primary_phone.value if record else None
+        )
+
+    if validated_phone:
+        book.ensure_phone_unique(
+            validated_phone.value,
+            owner_name=record.name.value if record else None
         )
 
     if record is None:
@@ -189,6 +196,14 @@ def remove_address_command(args, book: AddressBook):
 
     return "Address removed."
 
+@input_error
+@require_args(1, "search <query>")
+def search_command(args, book: AddressBook):
+    query = args[0]
+    results = book.search(query)
+    if not results:
+        return "No contacts found."
+    return "\n".join(str(record) for record in results)
 
 # BIRTHDAY
 @input_error
@@ -215,6 +230,7 @@ def show_birthday(args, book: AddressBook):
 
 
 @input_error
+@require_args(0, "birthdays")
 def birthdays(args, book: AddressBook):
     upcoming = book.get_upcoming_birthdays()
 
@@ -226,6 +242,7 @@ def birthdays(args, book: AddressBook):
 
 # SHOW ALL
 @input_error
+@require_args(0, "all")
 def all_command(args, book: AddressBook):
     if not book:
         raise KeyError
@@ -235,6 +252,7 @@ def all_command(args, book: AddressBook):
 
 # EXIT
 @input_error
+@require_args(0, "close / exit")
 def close_command(args, book: AddressBook):
     return "Good bye!"
 
