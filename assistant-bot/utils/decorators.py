@@ -1,5 +1,3 @@
-# decorator for major errors
-from unittest import result
 
 def input_error(func):
     def inner(*args, **kwargs):
