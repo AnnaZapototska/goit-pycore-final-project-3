@@ -1,12 +1,38 @@
 from models.contacts import AddressBook, Record
-from models.fields import Email, Phone
+from models.fields import Email, Phone, Address
 from utils.decorators import input_error, require_args
+
+
+def build_address():
+    """
+    Collect address parts from user input and return formatted address string.
+    """
+    street = input("Enter street: ").strip()
+    if not street:
+        raise ValueError("Street cannot be empty.")
+
+    city = input("Enter city: ").strip()
+    if not city:
+        raise ValueError("City cannot be empty.")
+
+    country = input("Enter country: ").strip()
+    if not country:
+        raise ValueError("Country cannot be empty.")
+
+    # Format final address string
+    full_address = f"{street}, {city}, {country}"
+
+    # Validate final address with Address model
+    Address(full_address)
+
+    return full_address
 
 
 # Greet the bot
 @input_error
 def hello_command(args, book: AddressBook):
     return "How can I help you?"
+
 
 # Add a new contact with the given username, phone number, and email
 @input_error
@@ -73,6 +99,66 @@ def change_email_command(args, book: AddressBook):
     return "Email updated."
 
 
+# Add address to an existing contact using step-by-step input
+@input_error
+@require_args(1, "add-address <name>")
+def add_address_command(args, book: AddressBook):
+    name = args[0]
+    record = book.find(name)
+
+    if record is None:
+        raise ValueError("Contact does not exist.")
+
+    full_address = build_address()
+    record.add_address(full_address)
+    return "Address added."
+
+
+# Edit contact address using step-by-step input
+@input_error
+@require_args(1, "edit-address <name>")
+def edit_address_command(args, book: AddressBook):
+    name = args[0]
+    record = book.find(name)
+
+    if record is None:
+        raise ValueError("Contact does not exist.")
+
+    full_address = build_address()
+    record.edit_address(full_address)
+    return "Address updated."
+
+
+# Show saved address for a contact
+@input_error
+@require_args(1, "show-address <name>")
+def show_address_command(args, book: AddressBook):
+    name = args[0]
+    record = book.find(name)
+
+    if record is None:
+        raise ValueError("Contact does not exist.")
+
+    return f"{name}'s address is {record.get_address()}."
+
+
+# Remove address from a contact
+@input_error
+@require_args(1, "remove-address <name>")
+def remove_address_command(args, book: AddressBook):
+    name = args[0]
+    record = book.find(name)
+
+    if record is None:
+        raise ValueError("Contact does not exist.")
+
+    if record.address is None:
+        return "No address found."
+
+    record.remove_address()
+    return "Address removed."
+
+
 # Show the phone number for the specified contact
 @input_error
 @require_args(1, "phone <name>")
@@ -95,6 +181,7 @@ def add_birthday(args, book: AddressBook):
     record.add_birthday(birthdays)
     return "Birthday added."
     
+
 # show the date of birth
 @input_error
 @require_args(1, "show-birthday <name>")
@@ -106,10 +193,12 @@ def show_birthday(args, book: AddressBook):
         raise ValueError("Contact does not exist.")
     return f"{name}'s birthday is on {record.birthday.value}."
 
+
 # birthdays — return the list of the users with birthdays
 @input_error
 def birthdays(args, book: AddressBook):
     return "Upcoming birthdays: " + ", ".join(book.get_upcoming_birthdays())
+
 
 # Display all saved contacts with phone numbers and email
 @input_error
@@ -119,10 +208,12 @@ def all_command(args, book: AddressBook):
 
     return "\n".join(str(record) for record in book.values())
 
+
 # Exit the bot
 @input_error
 def close_command(args, book: AddressBook):
     return "Good bye!"
+
 
 # For invalid commands
 @input_error
