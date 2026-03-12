@@ -27,41 +27,20 @@ def add_contact(args, book: AddressBook):
 
     validated_phone = Phone(phone)
     validated_email = Email(email) if email else None
-
-    record = book.find(validated_phone.value)
-    message = "Contact updated."
-
-    if validated_email:
-        book.ensure_email_unique(
-            validated_email.value,
-            owner_phone=record.primary_phone.value if record else None
-        )
-
-    if validated_phone:
-        book.ensure_phone_unique(
-            validated_phone.value,
-            owner_name=record.name.value if record else None
-        )
-
-    if record is None:
-        record = Record(name, validated_phone.value)
-        message = "Contact added."
-
-        if validated_email:
-            record.add_email(validated_email.value)
-
-        book.add_record(record)
-        return message
-
-    record.set_name(name)
+    existing_record = book.find(validated_phone.value)
+    if existing_record is not None:
+        raise ValueError("A contact with this phone number already exists")
 
     if validated_email:
-        if getattr(record, "email", None) is None:
-            record.add_email(validated_email.value)
-        else:
-            record.edit_email(validated_email.value)
+        book.ensure_email_unique(validated_email.value)
 
-    return message
+    record = Record(name, validated_phone.value)
+
+    if validated_email:
+        record.add_email(validated_email.value)
+
+    book.add_record(record)
+    return "Contact added."
 
 
 # CHANGE PHONE
