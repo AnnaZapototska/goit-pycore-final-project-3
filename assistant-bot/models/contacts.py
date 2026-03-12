@@ -9,6 +9,7 @@ class Record:
         self.phones = []
         self.birthday = None
         self.email = None
+        self.address = None
 
     def add_phone(self, phone):
         self.phones.append(Phone(phone))
@@ -21,6 +22,22 @@ class Record:
 
     def add_birthday(self, birthday):
         self.birthday = Birthday(birthday)
+
+    def add_address(self, address):
+        # Add or replace contact address
+        self.address = Address(address)
+
+    def edit_address(self, new_address):
+        # Update contact address
+        self.address = Address(new_address)
+
+    def remove_address(self):
+        # Remove address from contact
+        self.address = None
+
+    def get_address(self):
+        # Return address as a readable string
+        return self.address.value if self.address else "no address"
 
     def remove_phone(self, phone: str):
         for phone_obj in self.phones:
@@ -46,8 +63,8 @@ class Record:
         phones = "; ".join(p.value for p in self.phones) or "no phones"
         email = getattr(self, "email", None)
         email_value = email.value if email else "no email"
-        return f"Contact name: {self.name.value}, phones: {phones}, email: {email_value}"
-
+        address_value = self.address.value if self.address else "no address"
+        return f"Contact name: {self.name.value}, phones: {phones}, email: {email_value}, address: {address_value}"
 
 
 class AddressBook(UserDict):
@@ -55,7 +72,7 @@ class AddressBook(UserDict):
     def add_record(self, record: Record):
         self.data[record.name.value] = record
 
-    def find (self, name: str):
+    def find(self, name: str):
         return self.data.get(name)
 
     def find_by_email(self, email: str):

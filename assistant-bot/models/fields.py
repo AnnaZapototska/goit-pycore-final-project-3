@@ -18,6 +18,26 @@ class Name(Field):
         super().__init__(value)
 
 
+class Address(Field):
+    """
+    Represents a contact address stored as a single formatted string.
+    """
+
+    def __init__(self, value):
+        # Normalize final address string before saving
+        normalized_value = str(value).strip()
+
+        # Prevent saving empty address
+        if not normalized_value:
+            raise ValueError("Address cannot be empty.")
+
+        # Prevent saving unrealistically short address
+        if len(normalized_value) < 5:
+            raise ValueError("Address is too short.")
+
+        super().__init__(normalized_value)
+
+
 class Phone(Field):
     @property
     def value(self):
@@ -48,6 +68,6 @@ class Email(Field):
 class Birthday(Field):
     def __init__(self, value):
         try:
-            self.value = datetime.strptime(value, '%d.%m.%Y').date()
+            self.value = datetime.strptime(value, "%d.%m.%Y").date()
         except ValueError:
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
