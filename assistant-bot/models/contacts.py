@@ -85,12 +85,12 @@ class AddressBook(UserDict):
                 continue
 
             for phone in record.phones:
-                if normalized_query == phone.value:
+                if not record in results and normalized_query == phone.value:
                     results.append(record)
                     break
 
             email = getattr(record, "email", None)
-            if email and normalized_query in email.value.lower():
+            if not record in results and email and normalized_query in email.value.lower():
                 results.append(record)
 
         return results
