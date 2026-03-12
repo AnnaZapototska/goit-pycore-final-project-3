@@ -12,7 +12,11 @@ def main():
 
     #show avaiable commands first
     print("Welcome to the assistant bot!")
-    print("Available commands: hello, add, change, change-email, phone, add-birthday, show-birthday, birthdays, all, exit / close")
+    print(
+        "Available commands: hello, add <name> <phone> [email], change <phone_or_email> <new_phone>, "
+        "change-email <phone_or_email> <new_email>, phone <phone_or_email>, "
+        "add-birthday <phone_or_email> <DD.MM.YYYY>, show-birthday <phone_or_email>, birthdays, all, exit / close"
+    )
     print()
 
     while True:
