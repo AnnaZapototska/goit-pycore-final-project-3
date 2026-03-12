@@ -223,7 +223,7 @@ def all_command(args, book: AddressBook):
 
     return "\n".join(str(record) for record in book.values())
 
-
+# Exit the bot
 @input_error
 def close_command(args, book: AddressBook):
     return "Good bye!"

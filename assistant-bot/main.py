@@ -20,15 +20,20 @@ def main():
 
     # show available commands first
     print("Welcome to the assistant bot!")
+    print("Available commands: hello, add, change, change-email, phone, add-birthday, show-birthday, birthdays, all, search, exit / close")
     print(
-        "Available commands: hello, add, change, change-email, phone, "
+        "Available commands: hello, add, change, search, change-email, phone, "
         "add-address, edit-address, show-address, remove-address, "
         "add-birthday, show-birthday, birthdays, all, exit / close"
     )
     print()
 
     while True:
-        user_input = input("Enter a command: ")
+        try:
+            user_input = input("Enter a command: ")
+        except KeyboardInterrupt:
+            print("\nGood bye!")
+            break
 
         command, args = parse_input(user_input)
 
@@ -41,6 +46,8 @@ def main():
 
         result = command_action(args, book)
         print(result)
+
+        save_data(book)
 
         if command in ["exit", "close"]:
             save_data(book)
@@ -65,6 +72,7 @@ COMMANDS = {
     "show-birthday": show_birthday,
     "birthdays": birthdays,
     "all": all_command,
+    "search": search_command,
     "exit": close_command,
     "close": close_command,
 }
