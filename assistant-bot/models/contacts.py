@@ -75,6 +75,25 @@ class AddressBook(UserDict):
             return
 
         raise ValueError("Email must be unique.")
+    
+    def search(self, query: str):
+        normalized_query = query.strip().lower()
+        results = []
+        for record in self.data.values():
+            if normalized_query in record.name.value.lower():
+                results.append(record)
+                continue
+
+            for phone in record.phones:
+                if not record in results and normalized_query == phone.value:
+                    results.append(record)
+                    break
+
+            email = getattr(record, "email", None)
+            if not record in results and email and normalized_query in email.value.lower():
+                results.append(record)
+
+        return results
 
     def delete(self, name: str):
         if name in self.data:

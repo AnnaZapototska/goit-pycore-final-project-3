@@ -119,6 +119,17 @@ def all_command(args, book: AddressBook):
 
     return "\n".join(str(record) for record in book.values())
 
+@input_error
+def search_command(args, book: AddressBook):
+    if len(args) != 1:
+        raise ValueError("Usage: search <query>")
+    
+    query = args[0]
+    results = book.search(query)
+    if not results:
+        return "No contacts found."
+    return "\n".join(str(record) for record in results)
+
 # Exit the bot
 @input_error
 def close_command(args, book: AddressBook):
