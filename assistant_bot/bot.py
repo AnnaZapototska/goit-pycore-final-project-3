@@ -275,7 +275,9 @@ def show_birthday(args, book: AddressBook):
     if not record.birthday:
         return "Birthday is not set for this contact."
 
-    return f"{record.name.value}'s birthday is on {record.birthday.value}."
+    # Format date object to DD.MM.YYYY
+    birthday_str = record.birthday.value.strftime("%d.%m.%Y")
+    return f"{record.name.value}'s birthday is on {birthday_str}."
 
 
 @input_error
