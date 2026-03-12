@@ -1,6 +1,6 @@
 from collections import UserDict
 from datetime import datetime, timedelta
-from .fields import *
+from .fields import Name, Phone, Email, Address, Birthday
 
 
 class Record:
@@ -71,13 +71,17 @@ class Record:
         raise ValueError(f"Phone number {phone} not found.")
 
     def __str__(self):
-        additional_phones = "; ".join(p.value for p in self.phones[1:]) or "no additional phones"
+        additional_phones = "; ".join(
+            p.value for p in self.phones[1:]) or "no additional phones"
         email_value = self.email.value if self.email else "no email"
         address_value = self.address.value if self.address else "no address"
 
         return (
-            f"Contact name: {self.name.value}, primary phone: {self.primary_phone.value}, "
-            f"additional phones: {additional_phones}, email: {email_value}, address: {address_value}"
+            f"Contact name: {self.name.value}, "
+            f"primary phone: {self.primary_phone.value}, "
+            f"additional phones: {additional_phones}, "
+            f"email: {email_value}, "
+            f"address: {address_value}"
         )
 
 
@@ -99,7 +103,8 @@ class AddressBook(UserDict):
 
     def find_by_name(self, name: str):
         normalized_name = str(name).strip()
-        return [r for r in self.iter_records() if r.name.value == normalized_name]
+        return [r for r in self.iter_records() if r.name.value ==
+                normalized_name]
 
     def find_by_email(self, email: str):
         normalized_email = str(email).strip()
@@ -107,7 +112,7 @@ class AddressBook(UserDict):
             if record.email and record.email.value == normalized_email:
                 return record
         return None
-    
+
     def find_by_phone(self, phone: str):
         normalized_phone = phone.strip()
         for record in self.data.values():
@@ -122,7 +127,10 @@ class AddressBook(UserDict):
             return record
         return self.find_by_email(selector)
 
-    def ensure_primary_phone_unique(self, phone: str, owner_phone: str | None = None):
+    def ensure_primary_phone_unique(
+            self,
+            phone: str,
+            owner_phone: str | None = None):
         normalized_phone = Phone(phone).value
         existing_record = self.data.get(normalized_phone)
 
@@ -154,7 +162,7 @@ class AddressBook(UserDict):
             return
 
         raise ValueError("Phone number must be unique.")
-    
+
     def replace_primary_phone(self, old_phone: str, new_phone: str):
         record = self.find(old_phone)
         if record is None:
@@ -163,7 +171,8 @@ class AddressBook(UserDict):
         normalized_old = record.primary_phone.value
         normalized_new = Phone(new_phone).value
 
-        self.ensure_primary_phone_unique(normalized_new, owner_phone=normalized_old)
+        self.ensure_primary_phone_unique(
+            normalized_new, owner_phone=normalized_old)
 
         record.set_primary_phone(normalized_new)
 
@@ -196,7 +205,8 @@ class AddressBook(UserDict):
         if normalized_phone in self.data:
             del self.data[normalized_phone]
         else:
-            raise ValueError(f"Contact with primary phone {primary_phone} not found.")
+            raise ValueError(
+                f"Contact with primary phone {primary_phone} not found.")
 
     def get_upcoming_birthdays(self):
         upcoming_birthdays = []
@@ -209,7 +219,8 @@ class AddressBook(UserDict):
             birthday_this_year = record.birthday.value.replace(year=today.year)
 
             if birthday_this_year < today:
-                birthday_this_year = birthday_this_year.replace(year=today.year + 1)
+                birthday_this_year = birthday_this_year.replace(
+                    year=today.year + 1)
 
             days_until_birthday = (birthday_this_year - today).days
 

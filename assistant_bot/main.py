@@ -1,4 +1,21 @@
-from bot import *
+from bot import (
+    add_contact,
+    change_command,
+    change_email_command,
+    close_command,
+    phone_command,
+    add_birthday,
+    search_command,
+    show_birthday,
+    birthdays,
+    add_address_command,
+    edit_address_command,
+    show_address_command,
+    remove_address_command,
+    all_command,
+    invalid_command,
+    hello_command
+)
 from storage import load_data, save_data
 
 
@@ -13,6 +30,7 @@ def parse_input(user_input: str):
     args = parts[1:]
     return command, args
 
+
 def main():
     book = load_data()
 
@@ -20,11 +38,22 @@ def main():
     print("Welcome to the assistant bot!")
 
     print(
-        "Available commands: hello, add, " \
-        "change, change-email, " \
-        "phone, search, add-address, edit-address," \
-        " show-address, remove-address, add-birthday <DD.MM.YYYY>, show-birthday, " \
-        "birthdays, all, exit / close"
+        "Available commands:"
+        "hello, "
+        "add, "
+        "change, "
+        "change-email, "
+        "phone, "
+        "search, "
+        "add-address, "
+        "edit-address, "
+        "show-address, "
+        "remove-address, "
+        "add-birthday <DD.MM.YYYY>, "
+        "show-birthday, "
+        "birthdays, "
+        "all, "
+        "exit / close"
     )
 
     while True:
