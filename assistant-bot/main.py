@@ -6,14 +6,12 @@ def parse_input(user_input: str):
     parts = user_input.strip().split()
 
     # Handle empty input to avoid IndexError
-    # Example: user presses Enter without typing anything
     if not parts:
         return "", []
 
     command = parts[0].lower()
     args = parts[1:]
     return command, args
-
 
 def main():
     book = load_data()
@@ -22,9 +20,11 @@ def main():
     print("Welcome to the assistant bot!")
 
     print(
-        "Available commands: hello, add, change, search, change-email, phone, "
-        "add-address, edit-address, show-address, remove-address, "
-        "add-birthday, show-birthday, birthdays, all, exit / close"
+        "Available commands: hello, add <name> <phone> [email], " \
+        "change <phone_or_email> <new_phone>, change-email <phone_or_email> <new_email>, " \
+        "phone <phone_or_email>, search <query>, add-address <phone_or_email> <address>, edit-address <phone_or_email> <new_address>," \
+        " show-address <phone_or_email>, remove-address <phone_or_email>, add-birthday <phone_or_email> <DD.MM.YYYY>, show-birthday <phone_or_email>, " \
+        "birthdays, all, exit / close"
     )
 
     while True:
