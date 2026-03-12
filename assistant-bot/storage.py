@@ -13,7 +13,6 @@ def load_data(filename="addressbook.pkl"):
             book = pickle.load(f)
             if not isinstance(book, AddressBook):
                 raise ValueError("Stored data is not an address book.")
-            book.migrate_legacy_records()
             return book
     except FileNotFoundError:
         return AddressBook()
