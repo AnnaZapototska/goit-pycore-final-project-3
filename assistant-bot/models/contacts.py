@@ -12,6 +12,9 @@ class Record:
         self.address = None
 
     def add_phone(self, phone):
+        for phone_obj in self.phones:
+            if phone_obj.value == phone:
+                return  # Phone number already exists, do not add again
         self.phones.append(Phone(phone))
 
     def add_email(self, email):
@@ -82,6 +85,14 @@ class AddressBook(UserDict):
             if record_email and record_email.value == normalized_email:
                 return record
         return None
+    
+    def find_by_phone(self, phone: str):
+        normalized_phone = phone.strip()
+        for record in self.data.values():
+            for phone_obj in record.phones:
+                if phone_obj.value == normalized_phone:
+                    return record
+        return None
 
     def ensure_email_unique(self, email: str, owner_name: str | None = None):
         existing_record = self.find_by_email(email)
@@ -92,6 +103,16 @@ class AddressBook(UserDict):
             return
 
         raise ValueError("Email must be unique.")
+
+    def ensure_phone_unique(self, phone: str, owner_name: str | None = None):
+        existing_record = self.find_by_phone(phone)
+        if existing_record is None:
+            return
+
+        if owner_name is not None and existing_record.name.value == owner_name:
+            return
+
+        raise ValueError("Phone number must be unique.")
     
     def search(self, query: str):
         normalized_query = query.strip().lower()

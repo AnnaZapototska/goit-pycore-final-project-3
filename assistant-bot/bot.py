@@ -4,6 +4,7 @@ from utils.decorators import input_error, require_args
 
 
 @input_error
+@require_args(0, "hello")
 def hello_command(args, book: AddressBook):
     return "How can I help you?"
 
@@ -11,7 +12,7 @@ def hello_command(args, book: AddressBook):
 @input_error
 @require_args(3, "add <name> <phone> <email>")
 def add_contact(args, book: AddressBook):
-    name, phone, email = args[:3]
+    name, phone, email = args
     record = book.find(name)
     message = "Contact updated."
 
@@ -21,6 +22,12 @@ def add_contact(args, book: AddressBook):
     if validated_email:
         book.ensure_email_unique(
             validated_email.value,
+            owner_name=record.name.value if record else None
+        )
+
+    if validated_phone:
+        book.ensure_phone_unique(
+            validated_phone.value,
             owner_name=record.name.value if record else None
         )
 
@@ -66,7 +73,7 @@ def change_command(args, book: AddressBook):
 @input_error
 @require_args(2, "change-email <name> <new_email>")
 def change_email_command(args, book: AddressBook):
-    name, new_email = args[:2]
+    name, new_email = args
     record = book.find(name)
 
     if record is None:
@@ -159,10 +166,8 @@ def phone_command(args, book: AddressBook):
     return f"{name}'s phone number is {record.phones[0].value}."
 
 @input_error
+@require_args(1, "search <query>")
 def search_command(args, book: AddressBook):
-    if len(args) != 1:
-        raise ValueError("Usage: search <query>")
-    
     query = args[0]
     results = book.search(query)
     if not results:
@@ -198,6 +203,7 @@ def show_birthday(args, book: AddressBook):
 
 
 @input_error
+@require_args(0, "birthdays")
 def birthdays(args, book: AddressBook):
     upcoming = book.get_upcoming_birthdays()
     if not upcoming:
@@ -223,6 +229,7 @@ def build_address():
 
 
 @input_error
+@require_args(0, "all")
 def all_command(args, book: AddressBook):
     if not book:
         raise KeyError
@@ -231,6 +238,7 @@ def all_command(args, book: AddressBook):
 
 # Exit the bot
 @input_error
+@require_args(0, "close / exit")
 def close_command(args, book: AddressBook):
     return "Good bye!"
 
