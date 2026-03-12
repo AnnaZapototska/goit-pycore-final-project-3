@@ -3,27 +3,6 @@ from models.fields import Email, Phone, Address
 from utils.decorators import input_error, require_args
 
 
-def build_address():
-    """
-    Collect address parts from user input and return formatted address string.
-    """
-    street = input("Enter street: ").strip()
-    if not street:
-        raise ValueError("Street cannot be empty.")
-
-    city = input("Enter city: ").strip()
-    if not city:
-        raise ValueError("City cannot be empty.")
-
-    country = input("Enter country: ").strip()
-    if not country:
-        raise ValueError("Country cannot be empty.")
-
-    full_address = f"{street}, {city}, {country}"
-    Address(full_address)  # validation
-    return full_address
-
-
 @input_error
 def hello_command(args, book: AddressBook):
     return "How can I help you?"
@@ -179,6 +158,16 @@ def phone_command(args, book: AddressBook):
 
     return f"{name}'s phone number is {record.phones[0].value}."
 
+@input_error
+def search_command(args, book: AddressBook):
+    if len(args) != 1:
+        raise ValueError("Usage: search <query>")
+    
+    query = args[0]
+    results = book.search(query)
+    if not results:
+        return "No contacts found."
+    return "\n".join(str(record) for record in results)
 
 @input_error
 @require_args(2, "add-birthday <name> <birthday in DD.MM.YYYY>")
@@ -214,6 +203,23 @@ def birthdays(args, book: AddressBook):
     if not upcoming:
         return "No upcoming birthdays."
     return "Upcoming birthdays: " + ", ".join(upcoming)
+
+def build_address():
+    street = input("Enter street: ").strip()
+    if not street:
+        raise ValueError("Street cannot be empty.")
+
+    city = input("Enter city: ").strip()
+    if not city:
+        raise ValueError("City cannot be empty.")
+
+    country = input("Enter country: ").strip()
+    if not country:
+        raise ValueError("Country cannot be empty.")
+
+    full_address = f"{street}, {city}, {country}"
+    Address(full_address)  # validation
+    return full_address
 
 
 @input_error

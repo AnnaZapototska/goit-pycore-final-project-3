@@ -20,13 +20,12 @@ def main():
 
     # show available commands first
     print("Welcome to the assistant bot!")
-    print("Available commands: hello, add, change, change-email, phone, add-birthday, show-birthday, birthdays, all, search, exit / close")
+
     print(
         "Available commands: hello, add, change, search, change-email, phone, "
         "add-address, edit-address, show-address, remove-address, "
         "add-birthday, show-birthday, birthdays, all, exit / close"
     )
-    print()
 
     while True:
         try:
@@ -60,14 +59,10 @@ COMMANDS = {
     "change": change_command,
     "change-email": change_email_command,
     "phone": phone_command,
-
-    # Address commands added for contact address management
-    # These commands allow user to add, edit, show and remove addresses
     "add-address": add_address_command,
     "edit-address": edit_address_command,
     "show-address": show_address_command,
     "remove-address": remove_address_command,
-
     "add-birthday": add_birthday,
     "show-birthday": show_birthday,
     "birthdays": birthdays,
