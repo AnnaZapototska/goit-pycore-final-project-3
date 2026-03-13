@@ -5,6 +5,7 @@ from bot import (
     change_command,
     edit_command,
     change_email_command,
+    delete_contact_command,
     close_command,
     phone_command,
     add_birthday,
@@ -47,6 +48,7 @@ def main():
     "edit, "
     "change, "
     "change-email, "
+    "delete, "
     "phone, "
     "search, "
     "add-address, "
@@ -137,6 +139,7 @@ COMMANDS = {
     "edit": edit_command,
     "change": change_command,
     "change-email": change_email_command,
+    "delete": delete_contact_command,
     "phone": phone_command,
     "add-address": add_address_command,
     "edit-address": edit_address_command,
