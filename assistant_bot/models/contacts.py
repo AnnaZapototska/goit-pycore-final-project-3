@@ -2,13 +2,18 @@ from collections import UserDict
 from datetime import datetime, timedelta
 from .fields import Name, Phone, Email, Address, Birthday
 
-
 class Record:
-    def __init__(self, name, primary_phone):
+    def __init__(self, name, primary_phone, record_id=None):
+        """
+        name: string
+        primary_phone: string
+        record_id: string (optional) - assigned by AddressBook if None
+        """
+        self.id = record_id            # sequential ID assigned later
         self.name = Name(name)
         self.phones = [Phone(primary_phone)]
-        self.birthday = None
         self.email = None
+        self.birthday = None
         self.address = None
 
     @property
@@ -88,8 +93,26 @@ class Record:
 class AddressBook(UserDict):
 
     def add_record(self, record: Record):
+        """
+        Adds a new contact to the AddressBook.
+        Assigns a sequential ID if the record has no ID.
+        Ensures primary phone is unique.
+        """
+        # Ensure the primary phone is unique
         self.ensure_primary_phone_unique(record.primary_phone.value)
-        self.data[record.primary_phone.value] = record
+
+        # Generate a sequential ID if record.id is None
+        if record.id is None:
+            if self.data:
+                # Take the max existing ID and add 1
+                next_id = str(max(int(rid) for rid in self.data.keys()) + 1)
+            else:
+                next_id = "1"
+            record.id = next_id
+
+        # Store the record using the ID as the key
+        self.data[record.id] = record
+
 
     def iter_records(self):
         return self.data.values()
@@ -122,10 +145,24 @@ class AddressBook(UserDict):
         return None
 
     def find_by_selector(self, selector: str):
-        record = self.find(selector)
-        if record:
-            return record
-        return self.find_by_email(selector)
+        """
+        Find a contact by ID, primary phone, or email.
+        """
+        normalized_selector = str(selector).strip()
+
+        if normalized_selector in self.data:
+            return self.data[normalized_selector]
+
+        for record in self.data.values():
+            if record.primary_phone.value == normalized_selector:
+                return record
+            
+        for record in self.data.values():
+            if record.email and record.email.value == normalized_selector:
+                return record
+
+        # Not found
+        return None
 
     def ensure_primary_phone_unique(
             self,
@@ -163,22 +200,25 @@ class AddressBook(UserDict):
 
         raise ValueError("Phone number must be unique.")
 
-    def replace_primary_phone(self, old_phone: str, new_phone: str):
-        record = self.find(old_phone)
-        if record is None:
-            raise ValueError("Contact does not exist.")
 
-        normalized_old = record.primary_phone.value
+    def replace_primary_phone(self, record_id: str, new_phone: str):
+        """
+        Change the primary phone of a contact.
+        Requires the contact's ID.
+        Ensures the new phone is unique.
+        """
+
+        record = self.data.get(record_id)
+        if record is None:
+            raise ValueError("Contact ID not found.")
+
         normalized_new = Phone(new_phone).value
 
         self.ensure_primary_phone_unique(
             normalized_new,
-            owner_phone=normalized_old)
-
+            owner_phone=record.primary_phone.value
+        )
         record.set_primary_phone(normalized_new)
-
-        del self.data[normalized_old]
-        self.data[record.primary_phone.value] = record
 
     def search(self, query: str):
         normalized_query = query.strip().lower()

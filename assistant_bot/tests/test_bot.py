@@ -49,102 +49,153 @@ def test_hello_command(empty_book):
     result = hello_command([], empty_book)
     assert result == "How can I help you?"
 
-
+# -------------------------
+# TEST ADD CONTACT
+# -------------------------
 def test_add_contact(empty_book):
     result = add_contact(["Alice", "1234567890", "alice@test.com"], empty_book)
     assert "Contact added" in result
-    record = empty_book.find("1234567890")
+
+    # Get the record
+    record = next(iter(empty_book.iter_records()))
     assert record is not None
     assert record.name.value == "Alice"
     assert record.primary_phone.value == "1234567890"
     assert record.email.value == "alice@test.com"
 
 
+# -------------------------
+# TEST CHANGE PHONE
+# -------------------------
 def test_change_phone(empty_book):
     add_contact(["Bob", "0987654321"], empty_book)
-    result = change_command(["0987654321", "1112223333"], empty_book)
+    record = next(iter(empty_book.iter_records()))
+    contact_id = record.id
+
+    result = change_command([contact_id, "1112223333"], empty_book)
     assert "Primary phone updated" in result
-    record = empty_book.find("1112223333")
-    assert record.primary_phone.value == "1112223333"
-    assert record.name.value == "Bob"
+
+    updated_record = next(iter(empty_book.iter_records()))
+    assert updated_record.primary_phone.value == "1112223333"
+    assert updated_record.name.value == "Bob"
 
 
+# -------------------------
+# TEST CHANGE EMAIL
+# -------------------------
 def test_change_email(empty_book):
     add_contact(["Charlie", "2223334444", "charlie@test.com"], empty_book)
-    result = change_email_command(
-        ["2223334444", "newcharlie@test.com"], empty_book)
+    record = next(iter(empty_book.iter_records()))
+    contact_id = record.id
+
+    result = change_email_command([contact_id, "newcharlie@test.com"], empty_book)
     assert result == "Email updated."
-    record = empty_book.find("2223334444")
-    assert record.email.value == "newcharlie@test.com"
+
+    updated_record = next(iter(empty_book.iter_records()))
+    assert updated_record.email.value == "newcharlie@test.com"
 
 
+# -------------------------
+# TEST ADD & SHOW BIRTHDAY
+# -------------------------
 def test_add_show_birthday(empty_book):
     add_contact(["Eve", "3334445555"], empty_book)
-    add_birthday(["3334445555", "01.01.2000"], empty_book)
-    result = show_birthday(["3334445555"], empty_book)
-    assert "Eve's birthday is on 01.01.2000." in result
+    record = next(iter(empty_book.iter_records()))
+    contact_id = record.id
+
+    add_birthday([contact_id, "01.01.2000"], empty_book)
+    result = show_birthday([contact_id], empty_book)
+    assert "Eve's birthday is on 01.01.2000" in result
 
 
+# -------------------------
+# TEST ADD & SHOW ADDRESS
+# -------------------------
 def test_add_show_address(empty_book, monkeypatch):
     add_contact(["Grace", "4445556666"], empty_book)
+    record = next(iter(empty_book.iter_records()))
+    contact_id = record.id
 
     # Mock user input for address
     inputs = iter(["123 Street", "New York", "USA"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
 
-    result = add_address_command(["4445556666"], empty_book)
+    result = add_address_command([contact_id], empty_book)
     assert result == "Address added."
 
-    record = empty_book.find("4445556666")
-    assert record.get_address() == "123 Street, New York, USA"
+    updated_record = next(iter(empty_book.iter_records()))
+    assert updated_record.get_address() == "123 Street, New York, USA"
 
 
+# -------------------------
+# TEST EDIT ADDRESS
+# -------------------------
 def test_edit_address(empty_book, monkeypatch):
     add_contact(["Hank", "1112223333"], empty_book)
+    record = next(iter(empty_book.iter_records()))
+    contact_id = record.id
 
     # Add initial address
     inputs1 = iter(["Street A", "City A", "Country A"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs1))
-    add_address_command(["1112223333"], empty_book)
+    add_address_command([contact_id], empty_book)
 
     # Edit address
     inputs2 = iter(["Street B", "City B", "Country B"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs2))
-    result = edit_address_command(["1112223333"], empty_book)
+    result = edit_address_command([contact_id], empty_book)
     assert result == "Address updated."
 
-    record = empty_book.find("1112223333")
-    assert record.get_address() == "Street B, City B, Country B"
+    updated_record = next(iter(empty_book.iter_records()))
+    assert updated_record.get_address() == "Street B, City B, Country B"
 
 
+# -------------------------
+# TEST REMOVE ADDRESS
+# -------------------------
 def test_remove_address(empty_book, monkeypatch):
     add_contact(["Ivy", "9998887777"], empty_book)
+    record = next(iter(empty_book.iter_records()))
+    contact_id = record.id
 
     # Add address
     inputs = iter(["Street 1", "City 1", "Country 1"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-    add_address_command(["9998887777"], empty_book)
+    add_address_command([contact_id], empty_book)
 
     # Remove address
-    result = remove_address_command(["9998887777"], empty_book)
-    assert result.strip(".") == "Address removed"
+    result = remove_address_command([contact_id], empty_book)
+    assert result == "Address removed."
 
-    record = empty_book.find("9998887777")
-    assert record.get_address() == "no address"
+    updated_record = next(iter(empty_book.iter_records()))
+    assert updated_record.get_address() == "no address"
 
 
+# -------------------------
+# TEST PHONE COMMAND
+# -------------------------
 def test_phone_command(empty_book):
     add_contact(["John", "5555555555"], empty_book)
-    result = phone_command(["5555555555"], empty_book)
+    record = next(iter(empty_book.iter_records()))
+    contact_id = record.id
+
+    result = phone_command([contact_id], empty_book)
     assert "John's primary phone number is 5555555555" in result
 
 
+# -------------------------
+# TEST ALL COMMAND
+# -------------------------
 def test_all_command(empty_book):
     add_contact(["Alice", "1234567890"], empty_book)
     add_contact(["Bob", "0987654321"], empty_book)
+
     result = all_command([], empty_book)
-    assert "Alice" in result
-    assert "Bob" in result
+    # Check names and IDs are present
+    for record in empty_book.iter_records():
+        assert record.name.value in result
+        assert record.id in result
+
 
 def test_add_note_command(monkeypatch, notes_book):
     # Simulate user input for title and text interactively
