@@ -151,25 +151,12 @@ def edit_command(args, book: AddressBook):
 def phone_command(args, book: AddressBook):
     selector = args[0]
     record = resolve_record(selector, book)
-    return f"{record.name.value}'s primary phone number is {record.primary_phone.value}."
-
-
-# SEARCH
-@input_error
-def search_command(args, book: AddressBook):
-    if len(args) != 1:
-        raise ValueError("Usage: search <query>")
-
-    query = args[0]
-    results = book.search(query)
-
-    if not results:
-        return "No contacts found."
-
-    return "\n".join(str(record) for record in results)
-
+    return f"{record.name.value}'s primary " + \
+        f"phone number is {record.primary_phone.value}."
 
 # ADDRESS HELPERS
+
+
 def build_address():
     street = input("Enter street: ").strip()
     if not street:
@@ -245,6 +232,7 @@ def remove_address_command(args, book: AddressBook):
 
     return "Address removed."
 
+
 @input_error
 @require_args(1, "search <query>")
 def search_command(args, book: AddressBook):
@@ -255,6 +243,8 @@ def search_command(args, book: AddressBook):
     return "\n".join(str(record) for record in results)
 
 # BIRTHDAY
+
+
 @input_error
 @require_args(2, "add-birthday <phone_or_email> <DD.MM.YYYY>")
 def add_birthday(args, book: AddressBook):

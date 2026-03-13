@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 import pytest
 
 # Add the assistant_bot folder to sys.path so imports in bot.py work
@@ -11,27 +11,22 @@ from bot import (
     add_contact,
     change_command,
     change_email_command,
-    close_command,
     phone_command,
     add_birthday,
-    search_command,
     show_birthday,
-    birthdays,
     add_address_command,
     edit_address_command,
-    show_address_command,
     remove_address_command,
     all_command,
     hello_command
 )
-from models.contacts import AddressBook, Record
-from models.fields import Phone, Email, Address
-from utils.decorators import input_error, require_args
-
+from models.contacts import AddressBook
 
 # --------------------------
 # Fixtures
 # --------------------------
+
+
 @pytest.fixture
 def empty_book():
     return AddressBook()
@@ -39,6 +34,7 @@ def empty_book():
 # --------------------------
 # TESTS
 # --------------------------
+
 
 def test_hello_command(empty_book):
     result = hello_command([], empty_book)
@@ -66,7 +62,8 @@ def test_change_phone(empty_book):
 
 def test_change_email(empty_book):
     add_contact(["Charlie", "2223334444", "charlie@test.com"], empty_book)
-    result = change_email_command(["2223334444", "newcharlie@test.com"], empty_book)
+    result = change_email_command(
+        ["2223334444", "newcharlie@test.com"], empty_book)
     assert result == "Email updated."
     record = empty_book.find("2223334444")
     assert record.email.value == "newcharlie@test.com"

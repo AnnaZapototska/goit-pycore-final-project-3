@@ -46,12 +46,14 @@ class Phone(Field):
     @value.setter
     def value(self, new_value):
         if not new_value.isdigit() or len(new_value) != 10:
-            raise ValueError("Phone number must contain only digits and be 10 digits long.")
+            raise ValueError(
+                "Phone number must contain only digits and be 10 digits long.")
         self._value = new_value
 
 
 class Email(Field):
-    EMAIL_PATTERN = re.compile(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
+    EMAIL_PATTERN = re.compile(
+        r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
 
     @property
     def value(self):
