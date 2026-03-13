@@ -38,7 +38,7 @@ def main():
     print("Welcome to the assistant bot!")
 
     print(
-        "Available commands:"
+        "Available commands: "
         "hello, "
         "add, "
         "change, "
