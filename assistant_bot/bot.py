@@ -10,10 +10,63 @@ def hello_command(args, book: AddressBook):
 
 
 def resolve_record(selector, book: AddressBook):
+    # Resolve a contact using either phone or email.
     record = book.find_by_selector(selector)
     if record is None:
-        raise ValueError("Contact does not exist.")
+        raise ValueError("Contact not found")
     return record
+
+
+def apply_contact_edit(record, field, new_value, book: AddressBook):
+    # Normalize the requested field name so command input is case-insensitive.
+    normalized_field = field.strip().lower()
+
+    if normalized_field == "name":
+        # Update only the contact name.
+        record.set_name(new_value)
+        return "Name updated."
+
+    if normalized_field == "add-phone":
+        # Validate and add a new non-primary phone to the existing contact.
+        validated_phone = Phone(new_value)
+        book.ensure_phone_unique(validated_phone.value)
+        record.add_phone(validated_phone.value)
+        return "Phone added."
+
+    if normalized_field == "email":
+        # Validate email and keep it globally unique across contacts.
+        validated_email = Email(new_value)
+        book.ensure_email_unique(
+            validated_email.value,
+            owner_phone=record.primary_phone.value
+        )
+
+        if getattr(record, "email", None) is None:
+            record.add_email(validated_email.value)
+        else:
+            record.edit_email(validated_email.value)
+
+        return "Email updated."
+
+    if normalized_field == "address":
+        # Validate and update the contact address.
+        validated_address = Address(new_value)
+
+        if getattr(record, "address", None) is None:
+            record.add_address(validated_address.value)
+        else:
+            record.edit_address(validated_address.value)
+
+        return "Address updated."
+
+    if normalized_field == "birthday":
+        # Reuse the existing birthday validator from the Birthday field.
+        record.add_birthday(new_value)
+        return "Birthday updated."
+
+    raise ValueError(
+        "Unsupported field. Use name, add-phone, email, address, or birthday."
+    )
 
 
 # ADD CONTACT
@@ -27,41 +80,20 @@ def add_contact(args, book: AddressBook):
 
     validated_phone = Phone(phone)
     validated_email = Email(email) if email else None
-
-    record = book.find(validated_phone.value)
-    message = "Contact updated."
-
-    if validated_email:
-        book.ensure_email_unique(
-            validated_email.value,
-            owner_phone=record.primary_phone.value if record else None
-        )
-
-    if validated_phone:
-        book.ensure_phone_unique(
-            validated_phone.value,
-            owner_name=record.name.value if record else None
-        )
-
-    if record is None:
-        record = Record(name, validated_phone.value)
-        message = "Contact added."
-
-        if validated_email:
-            record.add_email(validated_email.value)
-
-        book.add_record(record)
-        return message
-
-    record.set_name(name)
+    existing_record = book.find(validated_phone.value)
+    if existing_record is not None:
+        raise ValueError("A contact with this phone number already exists")
 
     if validated_email:
-        if getattr(record, "email", None) is None:
-            record.add_email(validated_email.value)
-        else:
-            record.edit_email(validated_email.value)
+        book.ensure_email_unique(validated_email.value)
 
-    return message
+    record = Record(name, validated_phone.value)
+
+    if validated_email:
+        record.add_email(validated_email.value)
+
+    book.add_record(record)
+    return "Contact added."
 
 
 # CHANGE PHONE
@@ -96,31 +128,35 @@ def change_email_command(args, book: AddressBook):
     return "Email updated."
 
 
+@input_error
+def edit_command(args, book: AddressBook):
+    # Support values with spaces, for example full names or addresses.
+    if len(args) < 3:
+        return "Usage: edit <phone_or_email> <field> <new_value>"
+
+    selector = args[0]
+    field = args[1]
+    new_value = " ".join(args[2:]).strip()
+
+    if not new_value:
+        raise ValueError("New value cannot be empty.")
+
+    record = resolve_record(selector, book)
+    return apply_contact_edit(record, field, new_value, book)
+
+
 # PHONE
 @input_error
 @require_args(1, "phone <phone_or_email>")
 def phone_command(args, book: AddressBook):
     selector = args[0]
     record = resolve_record(selector, book)
-    return f"{record.name.value}'s primary phone number is {record.primary_phone.value}."
-
-
-# SEARCH
-@input_error
-def search_command(args, book: AddressBook):
-    if len(args) != 1:
-        raise ValueError("Usage: search <query>")
-
-    query = args[0]
-    results = book.search(query)
-
-    if not results:
-        return "No contacts found."
-
-    return "\n".join(str(record) for record in results)
-
+    return f"{record.name.value}'s primary " + \
+        f"phone number is {record.primary_phone.value}."
 
 # ADDRESS HELPERS
+
+
 def build_address():
     street = input("Enter street: ").strip()
     if not street:
@@ -196,6 +232,7 @@ def remove_address_command(args, book: AddressBook):
 
     return "Address removed."
 
+
 @input_error
 @require_args(1, "search <query>")
 def search_command(args, book: AddressBook):
@@ -206,6 +243,8 @@ def search_command(args, book: AddressBook):
     return "\n".join(str(record) for record in results)
 
 # BIRTHDAY
+
+
 @input_error
 @require_args(2, "add-birthday <phone_or_email> <DD.MM.YYYY>")
 def add_birthday(args, book: AddressBook):
