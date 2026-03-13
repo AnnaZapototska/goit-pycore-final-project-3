@@ -102,9 +102,8 @@ def change_email_command(args, book: AddressBook):
 def phone_command(args, book: AddressBook):
     selector = args[0]
     record = resolve_record(selector, book)
-    return f"{
-        record.name.value}'s primary phone number is {
-        record.primary_phone.value}."
+    return f"{record.name.value}'s primary " + \
+        f"phone number is {record.primary_phone.value}."
 
 # ADDRESS HELPERS
 

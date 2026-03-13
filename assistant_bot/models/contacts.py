@@ -172,7 +172,8 @@ class AddressBook(UserDict):
         normalized_new = Phone(new_phone).value
 
         self.ensure_primary_phone_unique(
-            normalized_new, owner_phone=normalized_old)
+            normalized_new,
+            owner_phone=normalized_old)
 
         record.set_primary_phone(normalized_new)
 
