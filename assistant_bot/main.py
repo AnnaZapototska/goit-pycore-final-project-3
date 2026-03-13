@@ -1,6 +1,7 @@
 from bot import (
     add_contact,
     change_command,
+    edit_command,
     change_email_command,
     close_command,
     phone_command,
@@ -20,6 +21,10 @@ from storage import load_data, save_data
 
 
 def parse_input(user_input: str):
+    """
+    Parse raw user input into command and arguments.
+    Returns an empty command for blank input.
+    """
     parts = user_input.strip().split()
 
     # Handle empty input to avoid IndexError
@@ -34,13 +39,13 @@ def parse_input(user_input: str):
 def main():
     book = load_data()
 
-    # show available commands first
+    # Show available commands first
     print("Welcome to the assistant bot!")
-
     print(
         "Available commands: "
         "hello, "
         "add, "
+        "edit, "
         "change, "
         "change-email, "
         "phone, "
@@ -70,20 +75,46 @@ def main():
             print("Please enter a command.")
             continue
 
-        command_action = COMMANDS.get(command, invalid_command)
+        command_action = COMMANDS.get(command)
+
+        # If command is unknown, suggest the closest valid command
+        if command_action is None:
+            suggestions = get_command_suggestions(command, COMMANDS.keys(), limit=3)
+
+            if suggestions:
+                main_suggestion = suggestions[0]
+                print(f"Invalid command. Did you mean: {main_suggestion}?")
+
+                if ask_confirmation():
+                    command = main_suggestion
+                    command_action = COMMANDS.get(command)
+                    print(f"Running: {command}")
+                else:
+                    other_suggestions = suggestions[1:]
+                    if other_suggestions:
+                        print("Other suggestions: " + ", ".join(other_suggestions))
+                    else:
+                        print("No other suggestions found.")
+                    print("Please type the command manually.")
+                    continue
+            else:
+                print("Invalid command.")
+                continue
 
         result = command_action(args, book)
         print(result)
 
+        # Save data after each successful command execution
         save_data(book)
 
-        if command in ["exit", "close"] and args == []:
+        if command in ["exit", "close"] and not args:
             break
 
 
 COMMANDS = {
     "hello": hello_command,
     "add": add_contact,
+    "edit": edit_command,
     "change": change_command,
     "change-email": change_email_command,
     "phone": phone_command,
@@ -103,3 +134,4 @@ COMMANDS = {
 
 if __name__ == "__main__":
     main()
+
