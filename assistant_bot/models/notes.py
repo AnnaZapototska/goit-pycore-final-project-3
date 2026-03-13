@@ -43,9 +43,3 @@ class NotesBook(UserDict):
     def __str__(self):
         return "\n".join(str(note) for note in self.data.values())
     
-
-note1 = Note("Buy milk")  # Title defaults to "Untitled"
-note2 = Note("Finish report", "Work")  # Title is "Work"
-
-print(note1)
-print(note2)

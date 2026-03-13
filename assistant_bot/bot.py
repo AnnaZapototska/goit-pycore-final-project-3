@@ -1,4 +1,5 @@
 from models.contacts import AddressBook, Record
+from models.notes import NotesBook, Note
 from models.fields import Email, Phone, Address
 from utils.decorators import input_error, require_args
 
@@ -302,3 +303,71 @@ def close_command(args, book: AddressBook):
 @input_error
 def invalid_command(args, book: AddressBook):
     return "Invalid command."
+
+# --- notes commands ---
+
+@input_error
+@require_args(1, "add_note <title> <text>")
+def add_note_command(args, notes_book: NotesBook):
+    """
+    Adds a note to NotesBook.
+    """
+    if len(args) == 1:
+        # Only text provided, use default title
+        title = None
+        text = args[0]
+    else:
+        title = args[0]
+        text = " ".join(args[1:])
+
+    notes_book.add_note(title, text)
+    return f"Note '{title or 'Untitled'}' added successfully."
+
+@input_error
+@require_args(0, "show_notes")
+def show_notes_command(args, notes_book: NotesBook):
+    """
+    Shows all notes.
+    """
+    if not notes_book:
+        return "No notes found."
+    return str(notes_book)
+
+
+@input_error
+@require_args(2, "edit_note <title> <new_text>")
+def edit_note_command(args, notes_book: NotesBook):
+    """
+    Edits the text of a note.
+    """
+    title = args[0]
+    new_text = " ".join(args[1:])
+
+    notes_book.edit_note(title, new_text)
+    return f"Note '{title}' updated successfully."
+
+@input_error
+@require_args(1, "delete_note <title>")
+def delete_note_command(args, notes_book: NotesBook):
+    """
+    Deletes a note by title.
+    Usage: delete_note <title>
+    """
+    title = args[0]
+    notes_book.delete_note(title)
+    return f"Note '{title}' deleted successfully."
+
+
+@input_error
+@require_args(1, "search_notes <keyword>")
+def search_notes_command(args, notes_book: NotesBook):
+    """
+    Searches notes by keyword in title or text.
+    Usage: search_notes <keyword>
+    """
+    keyword = args[0]
+    results = notes_book.search_notes(keyword)
+    if not results:
+        return f"No notes found matching '{keyword}'."
+    return "\n".join(str(note) for note in results)
+

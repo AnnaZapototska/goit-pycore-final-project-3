@@ -16,10 +16,20 @@ from bot import (
     remove_address_command,
     all_command,
     invalid_command,
-    hello_command
+    hello_command,
+    add_note_command,
+    show_notes_command,
+    edit_note_command,
+    delete_note_command,
+    search_notes_command
 )
-from storage import load_data, save_data
 
+from storage import (
+    load_data_contacts, 
+    save_data_contacts,
+    load_data_notes,
+    save_data_notes
+)
 
 def parse_input(user_input: str):
     """
@@ -35,6 +45,7 @@ def parse_input(user_input: str):
     command = parts[0].lower()
     args = parts[1:]
     return command, args
+
 
 def get_command_suggestions(command: str, available_commands, limit=3):
     """
@@ -76,28 +87,36 @@ def ask_confirmation():
 
 
 def main():
-    book = load_data()
+    book = load_data_contacts()
+    notes_book = load_data_notes()
 
     # Show available commands first
     print("Welcome to the assistant bot!")
     print(
-        "Available commands: "
-        "hello, "
-        "add, "
-        "edit, "
-        "change, "
-        "change-email, "
-        "phone, "
-        "search, "
-        "add-address, "
-        "edit-address, "
-        "show-address, "
-        "remove-address, "
-        "add-birthday <DD.MM.YYYY>, "
-        "show-birthday, "
-        "birthdays, "
-        "all, "
-        "exit / close"
+    "Available commands: "
+    "hello, "
+    "add, "
+    "edit, "
+    "change, "
+    "change-email, "
+    "phone, "
+    "search, "
+    "add-address, "
+    "edit-address, "
+    "show-address, "
+    "remove-address, "
+    "add-birthday <DD.MM.YYYY>, "
+    "show-birthday, "
+    "birthdays, "
+    "all, "
+    "exit / close, "
+    
+    # --- notes commands ---
+    "add_note, "
+    "show_notes, "
+    "edit_note, "
+    "delete_note, "
+    "search_notes <keyword>"
     )
 
     while True:
@@ -144,14 +163,22 @@ def main():
         print(result)
 
         # Save data after each successful command execution
-        save_data(book)
+        save_data_contacts(book)
+        save_data_notes(notes_book)
 
         if command in ["exit", "close"] and not args:
             break
 
 
 COMMANDS = {
+    # --- global commands ---
     "hello": hello_command,
+    "all": all_command,
+    "search": search_command,
+    "exit": close_command,
+    "close": close_command,
+
+    # --- contacts commands ---
     "add": add_contact,
     "edit": edit_command,
     "change": change_command,
@@ -164,10 +191,13 @@ COMMANDS = {
     "add-birthday": add_birthday,
     "show-birthday": show_birthday,
     "birthdays": birthdays,
-    "all": all_command,
-    "search": search_command,
-    "exit": close_command,
-    "close": close_command,
+
+    # --- notes commands ---
+    "add_note": add_note_command,
+    "show_notes": show_notes_command,
+    "edit_note": edit_note_command,
+    "delete_note": delete_note_command,
+    "search_notes": search_notes_command,
 }
 
 
