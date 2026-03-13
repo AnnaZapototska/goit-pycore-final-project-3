@@ -1,12 +1,24 @@
 # decorator for major errors
+# def input_error(func):
+#     def inner(*args, **kwargs):
+#         try:
+#             return func(*args, **kwargs)
+#         except (ValueError, KeyError, IndexError) as e:
+#             return str(e)
+#         except BaseException:
+#             return "An unexpected error occurred. Please try again."
+#     return inner
+
 def input_error(func):
+    """
+    Decorator to catch exceptions and display the exact error message.
+    """
     def inner(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except (ValueError, KeyError, IndexError) as e:
-            return str(e)
-        except BaseException:
-            return "An unexpected error occurred. Please try again."
+        except Exception as e:
+            # Show exact error type and message
+            return f"[{type(e).__name__}] {e}"
     return inner
 
 
