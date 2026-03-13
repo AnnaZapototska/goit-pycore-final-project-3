@@ -1,4 +1,5 @@
 from models.contacts import AddressBook, Record
+from models.notes import NotesBook, Note
 from models.fields import Email, Phone, Address
 from utils.decorators import input_error, require_args
 
@@ -302,3 +303,143 @@ def close_command(args, book: AddressBook):
 @input_error
 def invalid_command(args, book: AddressBook):
     return "Invalid command."
+
+# --- notes commands ---
+
+@input_error
+@require_args(0, "add_note")  # allow 0 args so we can prompt interactively
+def add_note_command(args, notes_book: NotesBook):
+    """
+    Adds a note to NotesBook.
+    If user provides no arguments, interactively ask for title and text.
+    """
+    if not args:
+        # Interactive input
+        title = input("Title (press Enter to skip): ").strip()
+        text = input("Text: ").strip()
+
+        if not text:
+            raise ValueError("Note text cannot be empty.")
+    else:
+        # User provided args in the same line: first = title, rest = text
+        title = args[0]
+        text = " ".join(args[1:])
+        if not text:
+            # If text is missing, ask interactively
+            text = input("Text: ").strip()
+            if not text:
+                raise ValueError("Note text cannot be empty.")
+
+    note_id = notes_book.add_note(text=text, title=title)
+    return f"Note '{title or 'Untitled'}' added successfully with ID [{note_id[:8]}]."
+
+@input_error
+@require_args(0, "show_notes")
+def show_notes_command(args, notes_book: NotesBook):
+    """
+    Shows all notes with their IDs, titles, and text.
+    """
+    if not notes_book:
+        return "No notes found."
+
+    lines = []
+    for note in notes_book.iter_notes():
+        lines.append(
+            f"[ID: {note.id}] Title: {note.title or 'Untitled'}\n"
+            f"Text: {note.text}\n"
+            f"Created: {note.created_at}\n"
+            "----------------------------"
+        )
+    return "\n".join(lines)
+
+
+@input_error
+@require_args(1, "edit_note <id>")
+def edit_note_command(args, notes_book: NotesBook):
+    """
+    Edits a note by its ID. Prompts user to update title and text.
+    """
+    note_id = args[0]
+
+    # Find the note by ID
+    note = notes_book.get_note_by_id(note_id)
+    if note is None:
+        raise ValueError(f"No note found with ID '{note_id}'.")
+
+    print(f"Editing Note [ID: {note.id}]")
+    print(f"Current Title: {note.title or 'Untitled'}")
+    print(f"Current Text: {note.text}")
+
+    # Prompt for new title and text
+    new_title = input("New Title (leave empty to keep current): ").strip()
+    new_text = input("New Text (leave empty to keep current): ").strip()
+
+    # Keep existing if empty
+    final_title = new_title if new_title else note.title
+    final_text = new_text if new_text else note.text
+
+    if not final_text:
+        raise ValueError("Text cannot be empty.")
+
+    # Update the note
+    notes_book.edit_note_by_id(note_id, final_text, final_title)
+
+    return f"Note [ID: {note_id}] updated successfully."
+
+@input_error
+@require_args(1, "delete_note <id>")
+def delete_note_command(args, notes_book: NotesBook):
+    """
+    Deletes a note by its ID after confirmation.
+    """
+    note_id = args[0]
+
+    # Find the note first
+    note_to_delete = None
+    for note in notes_book.data.values():
+        if note.id == note_id:
+            note_to_delete = note
+            break
+
+    if not note_to_delete:
+        raise ValueError(f"No note found with ID '{note_id}'.")
+
+    # Ask for confirmation
+    confirm = input(f"Are you sure you want to delete note '{note_to_delete.title or 'Untitled'}'? (Y/N): ").strip().lower()
+    if confirm not in ("y", "yes"):
+        return "Delete canceled."
+
+    # Perform deletion
+    notes_book.delete_note_by_id(note_id)
+    return f"Note '{note_to_delete.title or 'Untitled'}' deleted successfully."
+
+
+@input_error
+@require_args(1, "search_notes <keyword>")
+def search_notes_command(args, notes_book: NotesBook):
+    """
+    Searches notes by ID, title, or text (partial matches allowed).
+    """
+    keyword = args[0].lower()
+    results = []
+
+    for note in notes_book.data.values():
+        if (keyword in note.id.lower() or
+            (note.title and keyword in note.title.lower()) or
+            keyword in note.text.lower()):
+            results.append(note)
+
+    if not results:
+        return f"No notes found matching '{keyword}'."
+
+    # Display results nicely with IDs
+    lines = []
+    for note in results:
+        lines.append(
+            f"[ID: {note.id}] Title: {note.title or 'Untitled'}\n"
+            f"Text: {note.text}\n"
+            f"Created: {note.created_at}\n"
+            "----------------------------"
+        )
+    return "\n".join(lines)
+

@@ -2,7 +2,7 @@ import os
 import sys
 import pytest
 
-# Add the assistant_bot folder to sys.path so imports in bot.py work
+# # Add the assistant_bot folder to sys.path so imports in bot.py work
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, PROJECT_ROOT)
 
@@ -18,18 +18,27 @@ from bot import (
     edit_address_command,
     remove_address_command,
     all_command,
-    hello_command
+    hello_command,
+    add_note_command,
+    show_notes_command,
+    edit_note_command,
+    delete_note_command,
+    search_notes_command
 )
 from models.contacts import AddressBook
+from models.notes import NotesBook, Note
 
 # --------------------------
 # Fixtures
 # --------------------------
 
-
 @pytest.fixture
 def empty_book():
     return AddressBook()
+
+@pytest.fixture
+def notes_book():
+    return NotesBook()
 
 # --------------------------
 # TESTS
@@ -136,3 +145,72 @@ def test_all_command(empty_book):
     result = all_command([], empty_book)
     assert "Alice" in result
     assert "Bob" in result
+
+def test_add_note_command(monkeypatch, notes_book):
+    # Simulate user input for title and text interactively
+    inputs = iter(["My Note", "This is the note text"])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+    
+    # Call command with empty args to trigger interactive mode
+    result = add_note_command([], notes_book)
+    assert "added successfully" in result
+    assert len(notes_book.data) == 1
+    note = list(notes_book.data.values())[0]
+    assert note.title == "My Note"
+    assert note.text == "This is the note text"
+
+def test_show_notes_command(notes_book):
+    # Add notes directly
+    note = Note("Some text", title="Test Note")
+    notes_book.data[note.id] = note
+    
+    output = show_notes_command([], notes_book)
+    assert "Test Note" in output
+    assert "Some text" in output
+    assert note.id in output
+
+def test_edit_note_command(monkeypatch, notes_book):
+    # Add a note
+    note = Note("Old text", title="Old Title")
+    notes_book.data[note.id] = note
+
+    # Simulate interactive input for new title and text
+    inputs = iter(["New Title", "Updated text"])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    # Call command with just ID
+    result = edit_note_command([note.id], notes_book)
+    assert "updated successfully" in result
+    updated_note = notes_book.get_note_by_id(note.id)
+    assert updated_note.title == "New Title"
+    assert updated_note.text == "Updated text"
+
+def test_delete_note_command(monkeypatch, notes_book):
+    # Add a note
+    note = Note("Delete this note", title="ToDelete")
+    notes_book.data[note.id] = note
+
+    # Simulate confirmation 'y'
+    monkeypatch.setattr("builtins.input", lambda _: "y")
+
+    result = delete_note_command([note.id], notes_book)
+    assert "deleted successfully" in result
+    assert note.id not in notes_book.data
+
+def test_search_notes_command(notes_book):
+    note1 = Note("Buy milk", title="Shopping")
+    note2 = Note("Finish report", title="Work")
+    notes_book.data[note1.id] = note1
+    notes_book.data[note2.id] = note2
+
+    # Search by title
+    result = search_notes_command(["Shop"], notes_book)
+    assert "Shopping" in result
+
+    # Search by text
+    result = search_notes_command(["report"], notes_book)
+    assert "Finish report" in result
+
+    # Search by ID
+    result = search_notes_command([note1.id], notes_book)
+    assert "Buy milk" in result
