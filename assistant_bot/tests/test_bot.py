@@ -1,6 +1,11 @@
-import sys
 import os
+import sys
 import pytest
+
+# Add the assistant_bot folder to sys.path so imports in bot.py work
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, PROJECT_ROOT)
+
 # Now bot.py imports will resolve correctly
 from bot import (
     add_contact,
@@ -16,10 +21,6 @@ from bot import (
     hello_command
 )
 from models.contacts import AddressBook
-
-# Add the assistant_bot folder to sys.path so imports in bot.py work
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.insert(0, PROJECT_ROOT)
 
 # --------------------------
 # Fixtures
