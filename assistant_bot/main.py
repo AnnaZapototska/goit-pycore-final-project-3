@@ -63,7 +63,7 @@ def main():
     # Show available commands first
     print("Welcome to the assistant bot!")
     print(
-        "Available commands: hello, add, change, change-email, "
+        "Available commands: hello, add, edit, change, change-email, "
         "phone, search, add-address, edit-address, show-address, "
         "remove-address, add-birthday <DD.MM.YYYY>, show-birthday, "
         "birthdays, all, exit / close"
@@ -122,6 +122,7 @@ def main():
 COMMANDS = {
     "hello": hello_command,
     "add": add_contact,
+    "edit": edit_command,
     "change": change_command,
     "change-email": change_email_command,
     "phone": phone_command,
