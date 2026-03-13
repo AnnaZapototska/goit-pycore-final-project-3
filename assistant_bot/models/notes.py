@@ -1,39 +1,67 @@
 from collections import UserDict
 from datetime import datetime
 
+
 class Note:
     """Class representing a single note."""
     _id_counter = 1  # class-level counter
 
-    def __init__(self, text, title=None, note_id=None):
+    def __init__(self, text, title=None, note_id=None, tags=None):
         if note_id is None:
             self.id = str(Note._id_counter)
             Note._id_counter += 1
         else:
             self.id = str(note_id)
             Note._id_counter = max(Note._id_counter, int(note_id) + 1)
+
         self.title = title or "Untitled"
         self.text = text
-        self.created_at = datetime.now().strftime("%d.%m.%Y %H:%M:%S") # Automatically set creation timestamp
+        self.tags = set(tag.strip().lower() for tag in (tags or []) if tag.strip())
+        self.created_at = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+
+    def add_tag(self, tag):
+        """Add a tag to the note."""
+        cleaned_tag = tag.strip().lower()
+        if not cleaned_tag:
+            raise ValueError("Tag cannot be empty.")
+        self.tags.add(cleaned_tag)
+
+    def remove_tag(self, tag):
+        """Remove a tag from the note."""
+        cleaned_tag = tag.strip().lower()
+        if cleaned_tag not in self.tags:
+            raise ValueError(f"Tag '{cleaned_tag}' not found.")
+        self.tags.remove(cleaned_tag)
+
+    def has_tag(self, tag):
+        """Check whether note contains the given tag."""
+        return tag.strip().lower() in self.tags
 
     def __str__(self):
         """Return a nicely formatted string representation of the note."""
-        return f"Title: {self.title}, Text: {self.text}, Created: {self.created_at}"
+        tags_str = ", ".join(sorted(self.tags)) if self.tags else "No tags"
+        return (
+            f"Title: {self.title}, "
+            f"Text: {self.text}, "
+            f"Tags: {tags_str}, "
+            f"Created: {self.created_at}"
+        )
 
 
 class NotesBook(UserDict):
     """Manage multiple Note instances by their unique IDs."""
 
-    def add_note(self, text, title=None):
-        """Add a new note with the given text and optional title. Automatically assigns a unique ID."""
+    def add_note(self, text, title=None, tags=None):
+        """Add a new note with the given text, optional title, and optional tags."""
         if self.data:
             next_id = str(max(int(i) for i in self.data.keys()) + 1)
         else:
             next_id = "1"
-        note = Note(text=text, title=title, note_id=next_id)
+
+        note = Note(text=text, title=title, note_id=next_id, tags=tags)
         self.data[note.id] = note
         return note.id
-    
+
     def get_note_by_id(self, note_id):
         note = self.data.get(note_id)
         if not note:
@@ -41,26 +69,22 @@ class NotesBook(UserDict):
         return note
 
     def edit_note_by_id(self, note_id, new_text=None, new_title=None):
-        """
-        Find a note by ID and update its text.
-        """
+        """Find a note by ID and update its fields."""
         note = self.get_note_by_id(note_id)
+
         if new_title:
             note.title = new_title
 
         if new_text:
             note.text = new_text
 
-
     def delete_note_by_id(self, note_id):
-        """
-        Delete a note using its ID.
-        """
-        note = self.get_note_by_id(note_id)
+        """Delete a note using its ID."""
+        self.get_note_by_id(note_id)
         del self.data[note_id]
 
     def search_notes(self, keyword):
-        """Return a list of notes where the keyword appears in title or text."""
+        """Return a list of notes where the keyword appears in title, text, or ID."""
         keyword_lower = keyword.lower()
         return [
             note for note in self.data.values()
@@ -69,15 +93,42 @@ class NotesBook(UserDict):
             or keyword_lower in note.id
         ]
 
+    def search_notes_by_tag(self, tag):
+        """Return notes that contain the given tag."""
+        cleaned_tag = tag.strip().lower()
+        return [
+            note for note in self.data.values()
+            if cleaned_tag in note.tags
+        ]
+
+    def sort_notes_by_tags(self):
+        """Return notes sorted alphabetically by tags."""
+        return sorted(
+            self.data.values(),
+            key=lambda note: sorted(note.tags)[0] if note.tags else ""
+        )
+
+    def get_all_tags(self):
+        """Return all unique tags sorted alphabetically."""
+        all_tags = set()
+        for note in self.data.values():
+            all_tags.update(note.tags)
+        return sorted(all_tags)
+
     def iter_notes(self):
         """Yield all Note objects in the book."""
         return self.data.values()
-    
+
     def __str__(self):
         """Return all notes nicely formatted."""
         if not self.data:
             return "No notes found."
+
         return "\n".join(
-            f"ID: {note.id}, Title: {note.title or 'Untitled'}, Text: {note.text}, Created: {note.created_at}"
+            f"ID: {note.id}, "
+            f"Title: {note.title or 'Untitled'}, "
+            f"Text: {note.text}, "
+            f"Tags: {', '.join(sorted(note.tags)) if note.tags else 'No tags'}, "
+            f"Created: {note.created_at}"
             for note in self.data.values()
         )
