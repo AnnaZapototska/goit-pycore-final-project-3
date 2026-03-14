@@ -18,6 +18,7 @@ from bot import (
     remove_address_command,
     all_command,
     hello_command,
+    help_command,
 
     # notes
     add_note_command,
@@ -43,6 +44,7 @@ from storage import (
 )
 
 from utils.colors import print_colored, input_colored
+from utils.help_view import build_welcome_message
 from tabulate import tabulate
 import shutil
 
@@ -51,7 +53,7 @@ def main():
     book = load_data_contacts()
     notes_book = load_data_notes()
 
-    print_colored("Welcome to the assistant bot!")
+    print_colored(build_welcome_message())
 
     while True:
         try:
@@ -91,17 +93,17 @@ def main():
                 continue
 
         notes_commands = {
-            "add_note",
-            "show_notes",
-            "edit_note",
-            "delete_note",
-            "search_notes",
-            "add-tag",
-            "remove-tag",
-            "show-tags",
-            "search-tag",
+            "add-note",
+            "all-notes",
+            "edit-note",
+            "delete-note",
+            "search-notes",
+            "add-note-tag",
+            "remove-note-tag",
+            "show-notes-tags",
+            "search-notes-by-tag",
             "sort-notes-by-tags",
-            "all-tags",
+            "all-notes-tags",
         }
 
         if command in notes_commands:
@@ -127,40 +129,41 @@ def main():
 COMMANDS = {
     # global
     "hello": hello_command,
-    "all": all_command,
-    "search": search_command,
+    "help": help_command,
+    "all-contacts": all_command,
+    "search-contact": search_command,
     "exit": close_command,
     "close": close_command,
 
     # contacts
-    "add": add_contact_command,
-    "edit": edit_command,
-    "change": change_command,
-    "change-email": change_email_command,
-    "delete": delete_contact_command,
-    "phone": phone_command,
+    "add-contact": add_contact_command,
+    "edit-contact": edit_command,
+    "edit-phone": change_command,
+    "edit-email": change_email_command,
+    "delete-contact": delete_contact_command,
+    "show-primary-phone": phone_command,
     "add-address": add_address_command,
     "edit-address": edit_address_command,
     "show-address": show_address_command,
-    "remove-address": remove_address_command,
+    "delete-address": remove_address_command,
     "add-birthday": add_birthday_command,
     "show-birthday": show_birthday_command,
-    "birthdays": birthdays_command,
+    "all-birthdays": birthdays_command,
 
     # notes
-    "add_note": add_note_command,
-    "show_notes": show_notes_command,
-    "edit_note": edit_note_command,
-    "delete_note": delete_note_command,
-    "search_notes": search_notes_command,
+    "add-note": add_note_command,
+    "all-notes": show_notes_command,
+    "edit-note": edit_note_command,
+    "delete-note": delete_note_command,
+    "search-notes": search_notes_command,
 
     # tags
-    "add-tag": add_tag_command,
-    "remove-tag": remove_tag_command,
-    "show-tags": show_tags_command,
-    "search-tag": search_tag_command,
+    "add-note-tag": add_tag_command,
+    "remove-note-tag": remove_tag_command,
+    "show-notes-tags": show_tags_command,
+    "search-notes-by-tag": search_tag_command,
     "sort-notes-by-tags": sort_notes_by_tags_command,
-    "all-tags": all_tags_command,
+    "all-notes-tags": all_tags_command,
 }
 
 

@@ -5,11 +5,18 @@ from models.notes import NotesBook, Note
 from models.fields import Email, Phone, Address
 from utils.decorators import input_error, require_args
 from utils.colors import AnsiColor
+from utils.help_view import build_help_message
 
 @input_error
 @require_args(0, "hello")
 def hello_command(args, book: AddressBook):
     return "How can I help you?"
+
+
+@input_error
+@require_args(0, "help")
+def help_command(args, book: AddressBook):
+    return build_help_message()
 
 
 def resolve_record(selector, book: AddressBook, require_id_only=False):
@@ -140,7 +147,7 @@ def edit_command(args, book: AddressBook):
 
 # PHONE
 @input_error
-@require_args(1, "phone <phone_or_email>")
+@require_args(1, "contact <id>")
 def phone_command(args, book: AddressBook):
     selector = args[0]
     record = resolve_record(selector, book, require_id_only=False)
