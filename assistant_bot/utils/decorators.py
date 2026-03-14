@@ -7,8 +7,8 @@ def input_error(func):
             return str(e)
         except BaseException:
             return "An unexpected error occurred. Please try again."
-    return inner
 
+    return inner
 
 # decorator with user friendly informations
 def require_args(count, usage):
@@ -17,5 +17,7 @@ def require_args(count, usage):
             if len(args) < count:
                 return f"Usage: {usage}"
             return func(args, book)
+
         return wrapper
+
     return decorator

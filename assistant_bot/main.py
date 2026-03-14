@@ -1,5 +1,4 @@
 from utils.helper import parse_input, get_command_suggestions, ask_confirmation
-
 from bot import (
     add_contact_command,
     change_command,
@@ -38,7 +37,6 @@ from bot import (
     edit_note_command,
     delete_note_command,
     search_notes_command,
-
     # tags
     add_tag_command,
     remove_tag_command,
@@ -47,7 +45,6 @@ from bot import (
     sort_notes_by_tags_command,
     all_tags_command,
 )
-
 from storage import (
     load_data_contacts,
     save_data_contacts,
@@ -55,22 +52,22 @@ from storage import (
     save_data_notes,
 )
 
-from utils.colors import print_colored, input_colored
-from tabulate import tabulate
-import shutil
+from utils.colors import print_colored, input_colored, print_as_table
+from utils.help_view import build_welcome_message
 
 
 def main():
     book = load_data_contacts()
     notes_book = load_data_notes()
 
-    print_colored("Welcome to the assistant bot!")
+    print_colored(build_welcome_message())
 
     while True:
         try:
             user_input = input_colored("assistant> ")
         except KeyboardInterrupt:
-            print_colored("\nGood bye!")
+            print()  # new line after Ctrl+C
+            print_as_table("Good bye!")
             break
 
         command, args = parse_input(user_input)
@@ -95,7 +92,9 @@ def main():
                 else:
                     other_suggestions = suggestions[1:]
                     if other_suggestions:
-                        print_colored("Other suggestions: " + ", ".join(other_suggestions))
+                        print_colored(
+                            "Other suggestions: " + ", ".join(other_suggestions)
+                        )
                     else:
                         print_colored("No other suggestions found.")
                     continue
@@ -104,17 +103,17 @@ def main():
                 continue
 
         notes_commands = {
-            "add_note",
-            "show_notes",
-            "edit_note",
-            "delete_note",
-            "search_notes",
-            "add-tag",
-            "remove-tag",
-            "show-tags",
-            "search-tag",
+            "add-note",
+            "all-notes",
+            "edit-note",
+            "delete-note",
+            "search-notes",
+            "add-note-tag",
+            "remove-note-tag",
+            "show-notes-tags",
+            "search-notes-by-tag",
             "sort-notes-by-tags",
-            "all-tags",
+            "all-notes-tags",
         }
 
         if command in notes_commands:
@@ -125,10 +124,7 @@ def main():
         if isinstance(result, str) and "═" in result:
             print(result)
         else:
-            terminal_width = shutil.get_terminal_size((80, 20)).columns
-            print_colored(
-                tabulate([[result]], tablefmt="grid", maxcolwidths=[terminal_width - 10])
-            )
+            print_as_table(result)
 
         save_data_contacts(book)
         save_data_notes(notes_book)
@@ -140,32 +136,27 @@ def main():
 COMMANDS = {
     # global
     "hello": hello_command,
-    "all": all_command,
-    "search": search_command,
+    "help": help_command,
+    "all-contacts": all_command,
+    "search-contact": search_command,
     "exit": close_command,
     "close": close_command,
-
     # contacts
-    "add": add_contact_command,
-    "edit": edit_command,
-    "edit-phone": edit_phone_command,
-    "change": change_command,
-    "change-email": change_email_command,
-    "delete": delete_contact_command,
-    "phone": phone_command,
-    "show-phone": show_phone_command,
+    "add-contact": add_contact_command,
+    "edit-contact": edit_command,
+    "edit-phone": change_command,
+    "edit-email": change_email_command,
+    "delete-contact": delete_contact_command,
+    "show-primary-phone": phone_command,
     "add-address": add_address_command,
     "edit-address": edit_address_command,
     "show-address": show_address_command,
-    "remove-address": remove_address_command,
+    "delete-address": remove_address_command,
     "add-birthday": add_birthday_command,
     "show-birthday": show_birthday_command,
-    "birthdays": birthdays_command,
+    "all-birthdays": birthdays_command,
 
     # groups
-    "add-group": add_group_command,
-    "all-groups": all_groups_command,
-    "delete-group": delete_group_command,
     "add-contact-group": add_contact_group_command,
     "add-contacts-to-group": add_contacts_to_group_command,
     "delete-contact-group": delete_contact_group_command,
@@ -174,19 +165,18 @@ COMMANDS = {
     "search-contacts-by-group": search_contacts_by_group_command,
 
     # notes
-    "add_note": add_note_command,
-    "show_notes": show_notes_command,
-    "edit_note": edit_note_command,
-    "delete_note": delete_note_command,
-    "search_notes": search_notes_command,
-
+    "add-note": add_note_command,
+    "all-notes": show_notes_command,
+    "edit-note": edit_note_command,
+    "delete-note": delete_note_command,
+    "search-notes": search_notes_command,
     # tags
-    "add-tag": add_tag_command,
-    "remove-tag": remove_tag_command,
-    "show-tags": show_tags_command,
-    "search-tag": search_tag_command,
+    "add-note-tag": add_tag_command,
+    "remove-note-tag": remove_tag_command,
+    "show-notes-tags": show_tags_command,
+    "search-notes-by-tag": search_tag_command,
     "sort-notes-by-tags": sort_notes_by_tags_command,
-    "all-tags": all_tags_command,
+    "all-notes-tags": all_tags_command,
 }
 
 

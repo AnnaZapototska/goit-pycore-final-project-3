@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from tabulate import tabulate
 
 from .fields import Name, Phone, Email, Address, Birthday
-from utils.colors import AnsiColor
+from utils.colors import AnsiColor, table_cell_colored_value
 
 
 class Record:
@@ -15,7 +15,7 @@ class Record:
         primary_phone: string
         record_id: string (optional) - assigned by AddressBook if None
         """
-        self.id = record_id
+        self.id = record_id  # sequential ID assigned later
         self.name = Name(name)
         self.phones = [Phone(primary_phone)]
         self.email = None
@@ -151,13 +151,15 @@ class Record:
             f"groups: {self.get_groups_display()}"
         )
 
-    def to_colored_dict(self, text_color=AnsiColor.CYAN, border_color=AnsiColor.WHITE):
-        def color_value(value):
-            if value is None:
-                return None
-            return AnsiColor.RESET + text_color + " " + str(value) + AnsiColor.RESET + border_color
+    def to_colored_dict(
+        self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
+    ):
+        """
+        Convert the Record to a dict with ANSI color codes for terminal display.
+        """
 
         return {
+<<<<<<< HEAD
             "id": color_value(self.id),
             "name": color_value(self.name.value),
             "phones": "\n".join(color_value(p.value) for p in self.phones),
@@ -168,10 +170,46 @@ class Record:
         }
 
     def to_table(self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN):
+=======
+            "id": table_cell_colored_value(self.id, text_color, border_color),
+            "name": table_cell_colored_value(self.name.value, text_color, border_color),
+            "phones": "\n".join(
+                [
+                    table_cell_colored_value(p.value, text_color, border_color)
+                    for p in self.phones
+                ]
+            )
+            if self.phones != []
+            else None,
+            "email": table_cell_colored_value(
+                self.email.value, text_color, border_color
+            )
+            if self.email
+            else None,
+            "birthday": table_cell_colored_value(
+                self.birthday.value.strftime("%d.%m.%Y"), text_color, border_color
+            )
+            if self.birthday
+            else None,
+            "address": table_cell_colored_value(
+                self.address.value, text_color, border_color
+            )
+            if self.address
+            else None,
+        }
+
+    def to_table(
+        self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
+    ):
+        """
+        Convert the Record to a table with ANSI color codes for terminal display.
+        """
+>>>>>>> development
         return AnsiColor.wrap(
             tabulate(
                 [self.to_colored_dict(text_color, border_color)],
                 headers="keys",
+<<<<<<< HEAD
                 tablefmt="fancy_grid"
             ),
             border_color
@@ -187,6 +225,36 @@ class RecordList(UserList):
                 tablefmt="fancy_grid"
             ),
             border_color
+=======
+                tablefmt="fancy_grid",
+            ),
+            border_color,
+        )
+
+
+
+class RecordList(UserList):
+    def to_table(
+        self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
+    ):
+        """
+        Convert the list of records to a table with ANSI color codes for terminal display.
+        """
+
+        if not self.data:
+            return AnsiColor.wrap("No contacts found.", text_color)
+
+        return AnsiColor.wrap(
+            tabulate(
+                [
+                    record.to_colored_dict(text_color, border_color)
+                    for record in self.data
+                ],
+                headers="keys",
+                tablefmt="fancy_grid",
+            ),
+            border_color,
+>>>>>>> development
         )
 
 
@@ -439,17 +507,39 @@ class AddressBook(UserDict):
         upcoming.sort(key=lambda x: x[1])
         return upcoming
 
+<<<<<<< HEAD
     def to_colored_dict(self, text_color=AnsiColor.BRIGHT_CYAN, border_color=AnsiColor.BRIGHT_WHITE):
         self.ensure_groups_storage()
         return [r.to_colored_dict(text_color, border_color) for r in self.data.values()]
 
     def to_table(self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN):
         self.ensure_groups_storage()
+=======
+
+    def to_colored_dict(
+        self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
+    ):
+        return [
+            record.to_colored_dict(text_color, border_color)
+            for record in self.data.values()
+        ]
+
+    def to_table(
+        self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
+    ):
+>>>>>>> development
         return AnsiColor.wrap(
             tabulate(
                 self.to_colored_dict(text_color, border_color),
                 headers="keys",
+<<<<<<< HEAD
                 tablefmt="fancy_grid"
             ),
             border_color
         )
+=======
+                tablefmt="fancy_grid",
+            ),
+            border_color,
+        )
+>>>>>>> development

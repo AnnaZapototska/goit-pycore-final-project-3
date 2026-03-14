@@ -1,16 +1,20 @@
-from tabulate import tabulate
-
 from models.contacts import AddressBook, Record
-from models.notes import NotesBook, Note
+from models.notes import NotesBook, NotesList
 from models.fields import Email, Phone, Address
 from utils.decorators import input_error, require_args
 from utils.colors import AnsiColor
-
+from utils.help_view import build_help_message
 
 @input_error
 @require_args(0, "hello")
 def hello_command(args, book: AddressBook):
     return "How can I help you?"
+
+
+@input_error
+@require_args(0, "help")
+def help_command(args, book: AddressBook):
+    return build_help_message()
 
 
 def resolve_record(selector, book: AddressBook, require_id_only=False):
@@ -43,7 +47,9 @@ def apply_contact_edit(record, field, new_value, book: AddressBook):
 
     if normalized_field == "email":
         validated_email = Email(new_value)
-        book.ensure_email_unique(validated_email.value, owner_record_id=record.id)
+        book.ensure_email_unique(
+            validated_email.value, owner_phone=record.primary_phone.value
+        )
 
         if record.email is None:
             record.add_email(validated_email.value)
@@ -112,7 +118,7 @@ def change_email_command(args, book: AddressBook):
     record = resolve_record(record_id, book, require_id_only=True)
 
     validated_email = Email(new_email)
-    book.ensure_email_unique(validated_email.value, owner_record_id=record.id)
+    book.ensure_email_unique(validated_email.value, record_id)
 
     if record.email is None:
         record.add_email(validated_email.value)
@@ -160,7 +166,6 @@ def phone_command(args, book: AddressBook):
     record = resolve_record(selector, book, require_id_only=False)
     return f"{record.name.value}'s primary phone number is {record.primary_phone.value}"
 
-
 # SHOW ALL PHONES
 @input_error
 @require_args(1, "show-phone <id_or_phone_or_email>")
@@ -168,7 +173,6 @@ def show_phone_command(args, book: AddressBook):
     selector = args[0]
     record = resolve_record(selector, book, require_id_only=False)
     return f"{record.name.value}'s phone numbers: {record.get_phones_display()}"
-
 
 # DELETE CONTACT
 @input_error
@@ -178,10 +182,13 @@ def delete_contact_command(args, book: AddressBook):
     record = resolve_record(record_id, book, require_id_only=True)
 
     while True:
-        confirm = input(
-            f"Are you sure you want to delete contact '{record.name.value}' [ID: {record.id}]? (Y/N): "
-        ).strip().lower()
-
+        confirm = (
+            input(
+                f"Are you sure you want to delete contact '{record.name.value}' [ID: {record.id}]? (Y/N): "
+            )
+            .strip()
+            .lower()
+        )
         if confirm in ("y", "yes"):
             book.delete(record.id)
             return "Contact deleted."
@@ -320,13 +327,134 @@ def birthdays_command(args, book: AddressBook):
         temp_book.data[record.id] = record
 
     return temp_book.to_table(
-        text_color=AnsiColor.BRIGHT_GREEN,
-        border_color=AnsiColor.BRIGHT_CYAN
+        text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
     )
 
 
 # GROUPS
 
+@input_error
+@require_args(1, "add-group <group>")
+def add_group_command(args, book: AddressBook):
+    group = args[0]
+    normalized_group = book.normalize_group_name(group)
+    book.add_group(normalized_group)
+    return f"Group '{normalized_group}' added."
+
+
+@input_error
+@require_args(0, "all-groups")
+def all_groups_command(args, book: AddressBook):
+    groups = book.get_all_groups()
+
+    if not groups:
+        return "No groups found."
+
+    return "Available groups: " + ", ".join(groups)
+
+
+@input_error
+@require_args(1, "delete-group <group>")
+def delete_group_command(args, book: AddressBook):
+    group = args[0]
+    normalized_group = book.normalize_group_name(group)
+
+    while True:
+        confirm = input(
+            f"Are you sure you want to delete group '{normalized_group}' from the system and all contacts? (Y/N): "
+        ).strip().lower()
+
+        if confirm in ("y", "yes"):
+            book.delete_group(normalized_group)
+            return f"Group '{normalized_group}' deleted."
+
+        if confirm in ("n", "no"):
+            return "Delete canceled."
+
+        print("Please enter Y or N.")
+
+
+@input_error
+@require_args(2, "add-contact-group <contact_id> <group>")
+def add_contact_group_command(args, book: AddressBook):
+    record_id, group = args
+    normalized_group = book.normalize_group_name(group)
+    book.add_contact_to_group(record_id, normalized_group)
+    return f"Contact ID [{record_id}] added to group '{normalized_group}'."
+
+
+@input_error
+@require_args(1, "add-contacts-to-group <group> <contact_id_1> <contact_id_2> ...")
+def add_contacts_to_group_command(args, book: AddressBook):
+    if not args:
+        return "Usage: add-contacts-to-group <group> <contact_id_1> <contact_id_2> ..."
+
+    group = args[0]
+    record_ids = args[1:]
+
+    if not record_ids:
+        return "Usage: add-contacts-to-group <group> <contact_id_1> <contact_id_2> ..."
+
+    result = book.add_contacts_to_group(group, record_ids)
+
+    lines = [f"Group: {result['group']}"]
+
+    if result["added"]:
+        lines.append("Added: " + ", ".join(result["added"]))
+
+    if result["skipped"]:
+        lines.append("Skipped: " + ", ".join(result["skipped"]))
+
+    return "\n".join(lines)
+
+
+@input_error
+@require_args(2, "delete-contact-group <contact_id> <group>")
+def delete_contact_group_command(args, book: AddressBook):
+    record_id, group = args
+    normalized_group = book.normalize_group_name(group)
+    book.delete_contact_group(record_id, normalized_group)
+    return f"Contact ID [{record_id}] removed from group '{normalized_group}'."
+
+
+@input_error
+@require_args(1, "delete-contact-groups <contact_id>")
+def delete_contact_groups_command(args, book: AddressBook):
+    record_id = args[0]
+    record = resolve_record(record_id, book, require_id_only=True)
+
+    if not record.groups:
+        return "Contact has no groups."
+
+    record.clear_groups()
+    return f"All groups removed from contact ID [{record_id}]."
+
+
+@input_error
+@require_args(1, "show-contact-groups <contact_id>")
+def show_contact_groups_command(args, book: AddressBook):
+    record_id = args[0]
+    record = resolve_record(record_id, book, require_id_only=True)
+
+    if not record.groups:
+        return f"{record.name.value} has no groups."
+
+    return f"{record.name.value}'s groups: {record.get_groups_display()}"
+
+
+@input_error
+@require_args(1, "search-contacts-by-group <group>")
+def search_contacts_by_group_command(args, book: AddressBook):
+    group = args[0]
+    normalized_group = book.normalize_group_name(group)
+    results = book.find_contacts_by_group(normalized_group)
+
+    if not results:
+        return f"No contacts found in group '{normalized_group}'."
+
+    return results.to_table()
+
+# GROUPS
 @input_error
 @require_args(1, "add-group <group>")
 def add_group_command(args, book: AddressBook):
@@ -457,8 +585,7 @@ def all_command(args, book: AddressBook):
         return "No contacts found."
 
     return book.to_table(
-        text_color=AnsiColor.BRIGHT_GREEN,
-        border_color=AnsiColor.BRIGHT_CYAN
+        text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
     )
 
 
@@ -476,6 +603,7 @@ def invalid_command(args, book: AddressBook):
 
 
 # --- notes commands ---
+
 
 @input_error
 @require_args(0, "add_note")
@@ -514,19 +642,7 @@ def show_notes_command(args, notes_book: NotesBook):
     if not notes_book:
         return "No notes found."
 
-    lines = []
-    for note in notes_book.iter_notes():
-        tags = getattr(note, "tags", set())
-        tags_str = ", ".join(sorted(tags)) if tags else "No tags"
-
-        lines.append(
-            f"[ID: {note.id}] Title: {note.title or 'Untitled'}\n"
-            f"Text: {note.text}\n"
-            f"Tags: {tags_str}\n"
-            f"Created: {note.created_at}\n"
-            "----------------------------"
-        )
-    return "\n".join(lines)
+    return notes_book.to_table()
 
 
 @input_error
@@ -575,9 +691,13 @@ def delete_note_command(args, notes_book: NotesBook):
     if not note_to_delete:
         raise ValueError(f"No note found with ID '{note_id}'.")
 
-    confirm = input(
-        f"Are you sure you want to delete note '{note_to_delete.title or 'Untitled'}'? (Y/N): "
-    ).strip().lower()
+    confirm = (
+        input(
+            f"Are you sure you want to delete note '{note_to_delete.title or 'Untitled'}'? (Y/N): "
+        )
+        .strip()
+        .lower()
+    )
     if confirm not in ("y", "yes"):
         return "Delete canceled."
 
@@ -592,32 +712,14 @@ def search_notes_command(args, notes_book: NotesBook):
     Searches notes by ID, title, or text (partial matches allowed).
     """
     keyword = args[0].lower()
-    results = []
 
-    for note in notes_book.data.values():
-        if (
-            keyword in note.id.lower()
-            or (note.title and keyword in note.title.lower())
-            or keyword in note.text.lower()
-        ):
-            results.append(note)
+    results = notes_book.search_notes(keyword)
 
     if not results:
         return f"No notes found matching '{keyword}'."
 
-    lines = []
-    for note in results:
-        tags = getattr(note, "tags", set())
-        tags_str = ", ".join(sorted(tags)) if tags else "No tags"
-
-        lines.append(
-            f"[ID: {note.id}] Title: {note.title or 'Untitled'}\n"
-            f"Text: {note.text}\n"
-            f"Tags: {tags_str}\n"
-            f"Created: {note.created_at}\n"
-            "----------------------------"
-        )
-    return "\n".join(lines)
+    notes_list = NotesList(results)
+    return notes_list.to_table()
 
 
 @input_error
@@ -672,16 +774,8 @@ def search_tag_command(args, notes_book: NotesBook):
     if not results:
         return f"No notes found with tag '{tag}'."
 
-    lines = []
-    for note in results:
-        lines.append(
-            f"[ID: {note.id}] Title: {note.title or 'Untitled'}\n"
-            f"Text: {note.text}\n"
-            f"Tags: {', '.join(sorted(note.tags)) if note.tags else 'No tags'}\n"
-            f"Created: {note.created_at}\n"
-            "----------------------------"
-        )
-    return "\n".join(lines)
+    notes_list = NotesList(results)
+    return notes_list.to_table()
 
 
 @input_error
@@ -695,16 +789,8 @@ def sort_notes_by_tags_command(args, notes_book: NotesBook):
     if not results:
         return "No notes found."
 
-    lines = []
-    for note in results:
-        lines.append(
-            f"[ID: {note.id}] Title: {note.title or 'Untitled'}\n"
-            f"Text: {note.text}\n"
-            f"Tags: {', '.join(sorted(note.tags)) if note.tags else 'No tags'}\n"
-            f"Created: {note.created_at}\n"
-            "----------------------------"
-        )
-    return "\n".join(lines)
+    notes_list = NotesList(results)
+    return notes_list.to_table()
 
 
 @input_error
@@ -719,26 +805,3 @@ def all_tags_command(args, notes_book: NotesBook):
         return "No tags found."
 
     return "Available tags: " + ", ".join(tags)
-
-
-# compatibility with tests
-add_contact = add_contact_command
-change = change_command
-edit = edit_command
-change_email = change_email_command
-delete = delete_contact_command
-delete_contact = delete_contact_command
-phone = phone_command
-show_phone = show_phone_command
-search = search_command
-add_birthday = add_birthday_command
-show_birthday = show_birthday_command
-birthdays = birthdays_command
-add_address = add_address_command
-edit_address = edit_address_command
-show_address = show_address_command
-remove_address = remove_address_command
-all = all_command
-all_contacts = all_command
-close = close_command
-invalid = invalid_command
