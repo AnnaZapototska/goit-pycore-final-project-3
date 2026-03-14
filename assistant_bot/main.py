@@ -18,6 +18,7 @@ from bot import (
     remove_address_command,
     all_command,
     hello_command,
+    help_command,
 
     # notes
     add_note_command,
@@ -43,6 +44,7 @@ from storage import (
 )
 
 from utils.colors import print_colored, input_colored
+from utils.help_view import build_welcome_message
 from tabulate import tabulate
 import shutil
 
@@ -51,7 +53,7 @@ def main():
     book = load_data_contacts()
     notes_book = load_data_notes()
 
-    print_colored("Welcome to the assistant bot!")
+    print_colored(build_welcome_message())
 
     while True:
         try:
@@ -127,6 +129,7 @@ def main():
 COMMANDS = {
     # global
     "hello": hello_command,
+    "help": help_command,
     "all": all_command,
     "search": search_command,
     "exit": close_command,
