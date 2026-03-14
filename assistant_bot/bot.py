@@ -264,14 +264,35 @@ def show_birthday_command(args, book: AddressBook):
 
 
 @input_error
-@require_args(0, "birthdays")
 def birthdays_command(args, book: AddressBook):
-    upcoming = book.get_upcoming_birthdays()
+    """Show upcoming birthdays within a specified number of days."""
+    days_ahead = 7
 
-    if not upcoming:
-        return "No upcoming birthdays."
+    if args:
+        try:
+            days_ahead = int(args[0])
+        except ValueError:
+            return "Please provide a valid number of days."
 
-    return "Upcoming birthdays: " + ", ".join(upcoming)
+    upcoming_list = book.get_upcoming_birthdays(days_ahead=days_ahead)
+
+    if not upcoming_list or "No upcoming birthdays" in upcoming_list[0]:
+        return f"No upcoming birthdays within the next {days_ahead} days."
+
+    temp_book = AddressBook()
+
+    for entry in upcoming_list:
+        name, _ = entry.split(" -> ")
+
+        for record in book.iter_records():
+            if record.name.value.lower() == name.lower():
+                temp_book.data[record.id] = record
+                break
+
+    return temp_book.to_table(
+        text_color=AnsiColor.BRIGHT_GREEN,
+        border_color=AnsiColor.BRIGHT_CYAN
+    )
 
 
 # SHOW ALL
