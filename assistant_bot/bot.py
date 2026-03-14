@@ -144,6 +144,23 @@ def phone_command(args, book: AddressBook):
     record = resolve_record(selector, book, require_id_only=False)
     return f"{record.name.value}'s primary phone number is {record.primary_phone.value}"
 
+# DELETE CONTACT
+@input_error
+@require_args(1, "delete <id>")
+def delete_contact_command(args, book: AddressBook):
+    record_id = args[0]
+    record = resolve_record(record_id, book, require_id_only=True)
+
+    while True:
+        confirm = input(
+            f"Are you sure you want to delete contact '{record.name.value}' [ID: {record.id}]? (Y/N): "
+        ).strip().lower()
+        if confirm in ("y", "yes"):
+            book.delete(record.id)
+            return "Contact deleted."
+        if confirm in ("n", "no"):
+            return "Delete canceled."
+        print("Please enter Y or N.")
 
 # ADDRESS HELPERS
 def build_address():

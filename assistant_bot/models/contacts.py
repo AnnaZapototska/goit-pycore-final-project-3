@@ -240,14 +240,13 @@ class AddressBook(UserDict):
 
         return results
 
-    def delete(self, primary_phone: str):
-        normalized_phone = Phone(primary_phone).value
+    def delete(self, record_id: str):
+        normalized_id = str(record_id).strip()
 
-        if normalized_phone in self.data:
-            del self.data[normalized_phone]
+        if normalized_id in self.data:
+            del self.data[normalized_id]
         else:
-            raise ValueError(
-                f"Contact with primary phone {primary_phone} not found.")
+            raise ValueError("Contact ID not found.")
 
     def get_upcoming_birthdays(self):
         upcoming_birthdays = []
