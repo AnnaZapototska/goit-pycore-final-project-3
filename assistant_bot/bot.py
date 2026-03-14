@@ -264,14 +264,33 @@ def show_birthday_command(args, book: AddressBook):
 
 
 @input_error
-@require_args(0, "birthdays")
+@input_error
 def birthdays_command(args, book: AddressBook):
-    upcoming = book.get_upcoming_birthdays()
+    """Show upcoming birthdays within a specified number of days, sorted by date."""
+    days_ahead = 7
 
-    if not upcoming:
-        return "No upcoming birthdays."
+    if args:
+        try:
+            days_ahead = int(args[0])
+        except ValueError:
+            raise ValueError("Please provide a valid number of days.")
 
-    return "Upcoming birthdays: " + ", ".join(upcoming)
+    # Get list of tuples (record, date)
+    upcoming_list = book.get_upcoming_birthdays(days_ahead=days_ahead)
+
+    if not upcoming_list:
+        return f"No upcoming birthdays within the next {days_ahead} days."
+
+    # Create a temporary AddressBook
+    temp_book = AddressBook()
+    for record, _ in upcoming_list:
+        temp_book.data[record.id] = record
+
+    # Return table
+    return temp_book.to_table(
+        text_color=AnsiColor.BRIGHT_GREEN,
+        border_color=AnsiColor.BRIGHT_CYAN
+    )
 
 
 # SHOW ALL
@@ -306,8 +325,12 @@ def add_note_command(args, notes_book: NotesBook):
     Adds a note to NotesBook.
     If user provides no arguments, interactively ask for title and text.
     """
+
+    tags = None
+
     if not args:
         title = input("Title (press Enter to skip): ").strip()
+        tags = input("Tag (press Enter to skip): ").strip() or None
         text = input("Text: ").strip()
 
         if not text:
@@ -320,7 +343,7 @@ def add_note_command(args, notes_book: NotesBook):
             if not text:
                 raise ValueError("Note text cannot be empty.")
 
-    note_id = notes_book.add_note(text=text, title=title)
+    note_id = notes_book.add_note(text=text, title=title, tags=tags)
     return f"Note '{title or 'Untitled'}' added successfully with ID [{note_id[:8]}]."
 
 
@@ -335,10 +358,13 @@ def show_notes_command(args, notes_book: NotesBook):
 
     lines = []
     for note in notes_book.iter_notes():
+        tags = getattr(note, "tags", set())
+        tags_str = ", ".join(sorted(tags)) if tags else "No tags"
+
         lines.append(
             f"[ID: {note.id}] Title: {note.title or 'Untitled'}\n"
             f"Text: {note.text}\n"
-            f"Tags: {', '.join(sorted(note.tags)) if note.tags else 'No tags'}\n"
+            f"Tags: {tags_str}\n"
             f"Created: {note.created_at}\n"
             "----------------------------"
         )
@@ -423,10 +449,13 @@ def search_notes_command(args, notes_book: NotesBook):
 
     lines = []
     for note in results:
+        tags = getattr(note, "tags", set())
+        tags_str = ", ".join(sorted(tags)) if tags else "No tags"
+
         lines.append(
             f"[ID: {note.id}] Title: {note.title or 'Untitled'}\n"
             f"Text: {note.text}\n"
-            f"Tags: {', '.join(sorted(note.tags)) if note.tags else 'No tags'}\n"
+            f"Tags: {tags_str}\n"
             f"Created: {note.created_at}\n"
             "----------------------------"
         )
@@ -465,11 +494,12 @@ def show_tags_command(args, notes_book: NotesBook):
     """
     note_id = args[0]
     note = notes_book.get_note_by_id(note_id)
-
-    if not note.tags:
+    tags = getattr(note, "tags", set())
+    
+    if not tags:
         return f"Note [ID: {note_id}] has no tags."
+    return f"Tags for note [ID: {note_id}]: {', '.join(sorted(tags))}"
 
-    return f"Tags for note [ID: {note_id}]: {', '.join(sorted(note.tags))}"
 
 
 @input_error

@@ -16,7 +16,11 @@ class Note:
 
         self.title = title or "Untitled"
         self.text = text
-        self.tags = set(tag.strip().lower() for tag in (tags or []) if tag.strip())
+
+        if isinstance(tags, str):
+             tags = [tags]
+
+        self.tags = {tag.strip().lower() for tag in (tags or []) if tag.strip()}
         self.created_at = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
 
     def add_tag(self, tag):
@@ -116,8 +120,10 @@ class NotesBook(UserDict):
         return sorted(all_tags)
 
     def iter_notes(self):
-        """Yield all Note objects in the book."""
-        return self.data.values()
+        for note in self.data.values():
+            if not hasattr(note, "tags"):
+                note.tags = set()  # fix old notes
+            yield note
 
     def __str__(self):
         """Return all notes nicely formatted."""
