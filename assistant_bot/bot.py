@@ -13,9 +13,9 @@ def hello_command(args, book: AddressBook):
 
 
 def resolve_record(selector, book: AddressBook, require_id_only=False):
-    """Resolves a contact based on selector. """
+    """Resolves a contact based on selector."""
     selector = str(selector).strip()
-    
+
     if require_id_only:
         record = book.data.get(selector)  # lookup by ID only
         if not record:
@@ -80,7 +80,6 @@ def add_contact_command(args, book: AddressBook):
     validated_phone = Phone(phone)
     validated_email = Email(email) if email else None
 
-    # Prevent duplicates
     existing_record = book.find_by_selector(validated_phone.value)
     if existing_record:
         raise ValueError("A contact with this phone already exists")
@@ -91,9 +90,7 @@ def add_contact_command(args, book: AddressBook):
     if validated_email:
         record.add_email(validated_email.value)
 
-    book.add_record(record)  # assigns automatic sequential ID
-
-    # Show the ID and name for confirmation
+    book.add_record(record)
     return f"Contact added: ID [{record.id}], Name {record.name.value}"
 
 
@@ -127,7 +124,6 @@ def change_email_command(args, book: AddressBook):
 
 @input_error
 def edit_command(args, book: AddressBook):
-    # Support values with spaces, for example full names or addresses.
     if len(args) < 3:
         return "Usage: edit <phone_or_email> <field> <new_value>"
 
@@ -222,6 +218,7 @@ def show_address_command(args, book: AddressBook):
         return f"{record.name.value} has no address saved."
     return f"{record.name.value}'s address is {address}"
 
+
 # REMOVE ADDRESS
 @input_error
 @require_args(1, "remove-address <id>")
@@ -299,34 +296,33 @@ def close_command(args, book: AddressBook):
 def invalid_command(args, book: AddressBook):
     return "Invalid command."
 
+
 # --- notes commands ---
 
 @input_error
-@require_args(0, "add_note")  # allow 0 args so we can prompt interactively
+@require_args(0, "add_note")
 def add_note_command(args, notes_book: NotesBook):
     """
     Adds a note to NotesBook.
     If user provides no arguments, interactively ask for title and text.
     """
     if not args:
-        # Interactive input
         title = input("Title (press Enter to skip): ").strip()
         text = input("Text: ").strip()
 
         if not text:
             raise ValueError("Note text cannot be empty.")
     else:
-        # User provided args in the same line: first = title, rest = text
         title = args[0]
         text = " ".join(args[1:])
         if not text:
-            # If text is missing, ask interactively
             text = input("Text: ").strip()
             if not text:
                 raise ValueError("Note text cannot be empty.")
 
     note_id = notes_book.add_note(text=text, title=title)
     return f"Note '{title or 'Untitled'}' added successfully with ID [{note_id[:8]}]."
+
 
 @input_error
 @require_args(0, "show_notes")
@@ -342,6 +338,7 @@ def show_notes_command(args, notes_book: NotesBook):
         lines.append(
             f"[ID: {note.id}] Title: {note.title or 'Untitled'}\n"
             f"Text: {note.text}\n"
+            f"Tags: {', '.join(sorted(note.tags)) if note.tags else 'No tags'}\n"
             f"Created: {note.created_at}\n"
             "----------------------------"
         )
@@ -355,9 +352,8 @@ def edit_note_command(args, notes_book: NotesBook):
     Edits a note by its ID. Prompts user to update title and text.
     """
     note_id = args[0]
-
-    # Find the note by ID
     note = notes_book.get_note_by_id(note_id)
+
     if note is None:
         raise ValueError(f"No note found with ID '{note_id}'.")
 
@@ -365,21 +361,18 @@ def edit_note_command(args, notes_book: NotesBook):
     print(f"Current Title: {note.title or 'Untitled'}")
     print(f"Current Text: {note.text}")
 
-    # Prompt for new title and text
     new_title = input("New Title (leave empty to keep current): ").strip()
     new_text = input("New Text (leave empty to keep current): ").strip()
 
-    # Keep existing if empty
     final_title = new_title if new_title else note.title
     final_text = new_text if new_text else note.text
 
     if not final_text:
         raise ValueError("Text cannot be empty.")
 
-    # Update the note
     notes_book.edit_note_by_id(note_id, final_text, final_title)
-
     return f"Note [ID: {note_id}] updated successfully."
+
 
 @input_error
 @require_args(1, "delete_note <id>")
@@ -389,7 +382,6 @@ def delete_note_command(args, notes_book: NotesBook):
     """
     note_id = args[0]
 
-    # Find the note first
     note_to_delete = None
     for note in notes_book.data.values():
         if note.id == note_id:
@@ -399,12 +391,12 @@ def delete_note_command(args, notes_book: NotesBook):
     if not note_to_delete:
         raise ValueError(f"No note found with ID '{note_id}'.")
 
-    # Ask for confirmation
-    confirm = input(f"Are you sure you want to delete note '{note_to_delete.title or 'Untitled'}'? (Y/N): ").strip().lower()
+    confirm = input(
+        f"Are you sure you want to delete note '{note_to_delete.title or 'Untitled'}'? (Y/N): "
+    ).strip().lower()
     if confirm not in ("y", "yes"):
         return "Delete canceled."
 
-    # Perform deletion
     notes_book.delete_note_by_id(note_id)
     return f"Note '{note_to_delete.title or 'Untitled'}' deleted successfully."
 
@@ -419,22 +411,123 @@ def search_notes_command(args, notes_book: NotesBook):
     results = []
 
     for note in notes_book.data.values():
-        if (keyword in note.id.lower() or
-            (note.title and keyword in note.title.lower()) or
-            keyword in note.text.lower()):
+        if (
+            keyword in note.id.lower()
+            or (note.title and keyword in note.title.lower())
+            or keyword in note.text.lower()
+        ):
             results.append(note)
 
     if not results:
         return f"No notes found matching '{keyword}'."
 
-    # Display results nicely with IDs
     lines = []
     for note in results:
         lines.append(
             f"[ID: {note.id}] Title: {note.title or 'Untitled'}\n"
             f"Text: {note.text}\n"
+            f"Tags: {', '.join(sorted(note.tags)) if note.tags else 'No tags'}\n"
             f"Created: {note.created_at}\n"
             "----------------------------"
         )
     return "\n".join(lines)
 
+
+@input_error
+@require_args(2, "add-tag <note_id> <tag>")
+def add_tag_command(args, notes_book: NotesBook):
+    """
+    Adds a tag to a note by its ID.
+    """
+    note_id, tag = args[0], args[1]
+    note = notes_book.get_note_by_id(note_id)
+    note.add_tag(tag)
+    return f"Tag '{tag}' added to note [ID: {note_id}]."
+
+
+@input_error
+@require_args(2, "remove-tag <note_id> <tag>")
+def remove_tag_command(args, notes_book: NotesBook):
+    """
+    Removes a tag from a note by its ID.
+    """
+    note_id, tag = args[0], args[1]
+    note = notes_book.get_note_by_id(note_id)
+    note.remove_tag(tag)
+    return f"Tag '{tag}' removed from note [ID: {note_id}]."
+
+
+@input_error
+@require_args(1, "show-tags <note_id>")
+def show_tags_command(args, notes_book: NotesBook):
+    """
+    Shows all tags for a specific note.
+    """
+    note_id = args[0]
+    note = notes_book.get_note_by_id(note_id)
+
+    if not note.tags:
+        return f"Note [ID: {note_id}] has no tags."
+
+    return f"Tags for note [ID: {note_id}]: {', '.join(sorted(note.tags))}"
+
+
+@input_error
+@require_args(1, "search-tag <tag>")
+def search_tag_command(args, notes_book: NotesBook):
+    """
+    Searches notes by tag.
+    """
+    tag = args[0]
+    results = notes_book.search_notes_by_tag(tag)
+
+    if not results:
+        return f"No notes found with tag '{tag}'."
+
+    lines = []
+    for note in results:
+        lines.append(
+            f"[ID: {note.id}] Title: {note.title or 'Untitled'}\n"
+            f"Text: {note.text}\n"
+            f"Tags: {', '.join(sorted(note.tags)) if note.tags else 'No tags'}\n"
+            f"Created: {note.created_at}\n"
+            "----------------------------"
+        )
+    return "\n".join(lines)
+
+
+@input_error
+@require_args(0, "sort-notes-by-tags")
+def sort_notes_by_tags_command(args, notes_book: NotesBook):
+    """
+    Returns all notes sorted alphabetically by tags.
+    """
+    results = notes_book.sort_notes_by_tags()
+
+    if not results:
+        return "No notes found."
+
+    lines = []
+    for note in results:
+        lines.append(
+            f"[ID: {note.id}] Title: {note.title or 'Untitled'}\n"
+            f"Text: {note.text}\n"
+            f"Tags: {', '.join(sorted(note.tags)) if note.tags else 'No tags'}\n"
+            f"Created: {note.created_at}\n"
+            "----------------------------"
+        )
+    return "\n".join(lines)
+
+
+@input_error
+@require_args(0, "all-tags")
+def all_tags_command(args, notes_book: NotesBook):
+    """
+    Shows all unique tags from all notes.
+    """
+    tags = notes_book.get_all_tags()
+
+    if not tags:
+        return "No tags found."
+
+    return "Available tags: " + ", ".join(tags)
