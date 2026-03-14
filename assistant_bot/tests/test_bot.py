@@ -8,18 +8,19 @@ sys.path.insert(0, PROJECT_ROOT)
 
 # Now bot.py imports will resolve correctly
 from bot import (
-    add_contact,
+    add_contact_command,
     change_command,
     change_email_command,
     delete_contact_command,
     phone_command,
-    add_birthday,
-    show_birthday,
+    add_birthday_command,
+    show_birthday_command,
     add_address_command,
     edit_address_command,
     remove_address_command,
     all_command,
     hello_command,
+    help_command,
     add_note_command,
     show_notes_command,
     edit_note_command,
@@ -28,6 +29,7 @@ from bot import (
 )
 from models.contacts import AddressBook
 from models.notes import NotesBook, Note
+from utils.help_view import build_welcome_message
 
 # --------------------------
 # Fixtures
@@ -55,10 +57,43 @@ def test_hello_command(empty_book):
 
 
 # -------------------------
+# TEST WELCOME MESSAGE
+# -------------------------
+def test_welcome_message_contains_drevo_and_hint():
+    result = build_welcome_message()
+    assert "█████╗" in result
+    assert "PERSONAL ASSISTANT BOT" in result
+    assert "Contacts • Notes" in result
+    assert 'Type "help" to see commands' in result
+
+
+# -------------------------
+# TEST HELP COMMAND
+# -------------------------
+def test_help_command_contains_grouped_tables(empty_book):
+    result = help_command([], empty_book)
+    assert "Global" in result
+    assert "Contacts" in result
+    assert "Notes" in result
+    assert "Tags" in result
+    assert "Command" in result
+    assert "Description" in result
+    assert "Example" in result
+    assert "Show all contacts" in result
+    assert "Add a new contact" in result
+    assert "Create a new note" in result
+    assert "Add a tag to a note" in result
+    assert "all-contacts" in result
+    assert "add-contact" in result
+    assert "add-note" in result
+    assert "add-note-tag" in result
+
+
+# -------------------------
 # TEST ADD CONTACT
 # -------------------------
 def test_add_contact(empty_book):
-    result = add_contact(["Alice", "1234567890", "alice@test.com"], empty_book)
+    result = add_contact_command(["Alice", "1234567890", "alice@test.com"], empty_book)
     assert "Contact added" in result
 
     # Get the record
@@ -73,7 +108,7 @@ def test_add_contact(empty_book):
 # TEST CHANGE PHONE
 # -------------------------
 def test_change_phone(empty_book):
-    add_contact(["Bob", "0987654321"], empty_book)
+    add_contact_command(["Bob", "0987654321"], empty_book)
     record = next(iter(empty_book.iter_records()))
     contact_id = record.id
 
@@ -89,7 +124,7 @@ def test_change_phone(empty_book):
 # TEST CHANGE EMAIL
 # -------------------------
 def test_change_email(empty_book):
-    add_contact(["Charlie", "2223334444", "charlie@test.com"], empty_book)
+    add_contact_command(["Charlie", "2223334444", "charlie@test.com"], empty_book)
     record = next(iter(empty_book.iter_records()))
     contact_id = record.id
 
@@ -104,12 +139,12 @@ def test_change_email(empty_book):
 # TEST ADD & SHOW BIRTHDAY
 # -------------------------
 def test_add_show_birthday(empty_book):
-    add_contact(["Eve", "3334445555"], empty_book)
+    add_contact_command(["Eve", "3334445555"], empty_book)
     record = next(iter(empty_book.iter_records()))
     contact_id = record.id
 
-    add_birthday([contact_id, "01.01.2000"], empty_book)
-    result = show_birthday([contact_id], empty_book)
+    add_birthday_command([contact_id, "01.01.2000"], empty_book)
+    result = show_birthday_command([contact_id], empty_book)
     assert "Eve's birthday is on 01.01.2000" in result
 
 
@@ -117,7 +152,7 @@ def test_add_show_birthday(empty_book):
 # TEST ADD & SHOW ADDRESS
 # -------------------------
 def test_add_show_address(empty_book, monkeypatch):
-    add_contact(["Grace", "4445556666"], empty_book)
+    add_contact_command(["Grace", "4445556666"], empty_book)
     record = next(iter(empty_book.iter_records()))
     contact_id = record.id
 
@@ -136,7 +171,7 @@ def test_add_show_address(empty_book, monkeypatch):
 # TEST EDIT ADDRESS
 # -------------------------
 def test_edit_address(empty_book, monkeypatch):
-    add_contact(["Hank", "1112223333"], empty_book)
+    add_contact_command(["Hank", "1112223333"], empty_book)
     record = next(iter(empty_book.iter_records()))
     contact_id = record.id
 
@@ -159,7 +194,7 @@ def test_edit_address(empty_book, monkeypatch):
 # TEST REMOVE ADDRESS
 # -------------------------
 def test_remove_address(empty_book, monkeypatch):
-    add_contact(["Ivy", "9998887777"], empty_book)
+    add_contact_command(["Ivy", "9998887777"], empty_book)
     record = next(iter(empty_book.iter_records()))
     contact_id = record.id
 
@@ -180,7 +215,7 @@ def test_remove_address(empty_book, monkeypatch):
 # TEST PHONE COMMAND
 # -------------------------
 def test_phone_command(empty_book):
-    add_contact(["John", "5555555555"], empty_book)
+    add_contact_command(["John", "5555555555"], empty_book)
     record = next(iter(empty_book.iter_records()))
     contact_id = record.id
 
@@ -192,8 +227,8 @@ def test_phone_command(empty_book):
 # TEST ALL COMMAND
 # -------------------------
 def test_all_command(empty_book):
-    add_contact(["Alice", "1234567890"], empty_book)
-    add_contact(["Bob", "0987654321"], empty_book)
+    add_contact_command(["Alice", "1234567890"], empty_book)
+    add_contact_command(["Bob", "0987654321"], empty_book)
 
     result = all_command([], empty_book)
     # Check names and IDs are present
@@ -203,7 +238,7 @@ def test_all_command(empty_book):
 
 
 def test_delete_contact_by_id(empty_book, monkeypatch):
-    add_contact(["Kate", "7778889999"], empty_book)
+    add_contact_command(["Kate", "7778889999"], empty_book)
     record = next(iter(empty_book.iter_records()))
 
     monkeypatch.setattr("builtins.input", lambda _: "y")
@@ -214,7 +249,7 @@ def test_delete_contact_by_id(empty_book, monkeypatch):
 
 
 def test_delete_contact_cancelled(empty_book, monkeypatch):
-    add_contact(["Liam", "1231231234"], empty_book)
+    add_contact_command(["Liam", "1231231234"], empty_book)
     record = next(iter(empty_book.iter_records()))
 
     monkeypatch.setattr("builtins.input", lambda _: "n")
@@ -231,7 +266,7 @@ def test_delete_contact_missing_id(empty_book):
 
 def test_add_note_command(monkeypatch, notes_book):
     # Simulate user input for title and text interactively
-    inputs = iter(["My Note", "This is the note text"])
+    inputs = iter(["My Note", "", "This is the note text"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
 
     # Call command with empty args to trigger interactive mode
