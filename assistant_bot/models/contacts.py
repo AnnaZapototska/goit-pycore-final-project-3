@@ -282,39 +282,45 @@ class AddressBook(UserDict):
         else:
             raise ValueError("Contact ID not found.")
 
-    def get_upcoming_birthdays(self):
-        upcoming_birthdays = []
+
+    def get_upcoming_birthdays(self, days_ahead=7):
+        """
+        Returns a list of tuples (record, birthday_date) for contacts whose
+        birthday is within the next `days_ahead` days.
+        Adjusts birthdays falling on weekends to Monday.
+        Sorted by upcoming date (soonest first).
+        """
         today = datetime.today().date()
+        upcoming = []
 
         for record in self.iter_records():
             if record.birthday is None:
                 continue
 
-            birthday_this_year = record.birthday.value.replace(year=today.year)
+            # Birthday in current year
+            bday_this_year = record.birthday.value.replace(year=today.year)
 
-            if birthday_this_year < today:
-                birthday_this_year = birthday_this_year.replace(
-                    year=today.year + 1)
+            # If birthday already passed, consider next year
+            if bday_this_year < today:
+                bday_this_year = bday_this_year.replace(year=today.year + 1)
 
-            days_until_birthday = (birthday_this_year - today).days
+            days_until_bday = (bday_this_year - today).days
 
-            if 0 <= days_until_birthday <= 7:
+            if 0 <= days_until_bday <= days_ahead:
+                # Adjust for weekend
+                congr_date = bday_this_year
+                if congr_date.weekday() == 5:  # Saturday
+                    congr_date += timedelta(days=2)
+                elif congr_date.weekday() == 6:  # Sunday
+                    congr_date += timedelta(days=1)
 
-                congratulation_date = birthday_this_year
+                upcoming.append((record, congr_date))
 
-                if congratulation_date.weekday() == 5:
-                    congratulation_date += timedelta(days=2)
-                elif congratulation_date.weekday() == 6:
-                    congratulation_date += timedelta(days=1)
+        # Sort by upcoming date
+        upcoming.sort(key=lambda x: x[1])
 
-                upcoming_birthdays.append(
-                    f"{record.name.value} -> {congratulation_date}"
-                )
-
-        if not upcoming_birthdays:
-            return ["No upcoming birthdays within the next week."]
-
-        return upcoming_birthdays
+        return upcoming  
+    
     
     def to_colored_dict(self, text_color=AnsiColor.BRIGHT_CYAN, border_color=AnsiColor.BRIGHT_WHITE):
         return [record.to_colored_dict(text_color, border_color) for record in self.data.values()]
