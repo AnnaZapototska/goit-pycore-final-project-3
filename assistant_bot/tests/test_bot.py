@@ -11,6 +11,7 @@ from bot import (
     add_contact,
     change_command,
     change_email_command,
+    delete_contact_command,
     phone_command,
     add_birthday,
     show_birthday,
@@ -195,6 +196,33 @@ def test_all_command(empty_book):
     for record in empty_book.iter_records():
         assert record.name.value in result
         assert record.id in result
+
+
+def test_delete_contact_by_id(empty_book, monkeypatch):
+    add_contact(["Kate", "7778889999"], empty_book)
+    record = next(iter(empty_book.iter_records()))
+
+    monkeypatch.setattr("builtins.input", lambda _: "y")
+
+    result = delete_contact_command([record.id], empty_book)
+    assert result == "Contact deleted."
+    assert record.id not in empty_book.data
+
+
+def test_delete_contact_cancelled(empty_book, monkeypatch):
+    add_contact(["Liam", "1231231234"], empty_book)
+    record = next(iter(empty_book.iter_records()))
+
+    monkeypatch.setattr("builtins.input", lambda _: "n")
+
+    result = delete_contact_command([record.id], empty_book)
+    assert result == "Delete canceled."
+    assert record.id in empty_book.data
+
+
+def test_delete_contact_missing_id(empty_book):
+    result = delete_contact_command(["999"], empty_book)
+    assert result == "Contact ID 999 not found"
 
 
 def test_add_note_command(monkeypatch, notes_book):
