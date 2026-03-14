@@ -49,7 +49,7 @@ def apply_contact_edit(record, field, new_value, book: AddressBook):
     if normalized_field == "email":
         validated_email = Email(new_value)
         book.ensure_email_unique(
-            validated_email.value, owner_phone=record.primary_phone.value
+            validated_email.value, owner_record_id=record.id
         )
 
         if record.email is None:
@@ -133,16 +133,16 @@ def change_email_command(args, book: AddressBook):
 @input_error
 def edit_command(args, book: AddressBook):
     if len(args) < 3:
-        return "Usage: edit <phone_or_email> <field> <new_value>"
+        return "Usage: edit-contact <id> <field> <new_value>"
 
-    selector = args[0]
+    record_id = args[0]
     field = args[1]
     new_value = " ".join(args[2:]).strip()
 
     if not new_value:
         raise ValueError("New value cannot be empty.")
 
-    record = resolve_record(selector, book)
+    record = resolve_record(record_id, book, require_id_only=True)
     return apply_contact_edit(record, field, new_value, book)
 
 

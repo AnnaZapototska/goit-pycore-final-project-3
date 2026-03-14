@@ -37,7 +37,7 @@ COMMAND_GROUPS = [
         "Contacts",
         [
             ("add-contact", "Add a new contact", "add-contact John 1234567890 john@mail.com"),
-            ("edit-contact", "Edit a contact field", "edit-contact 1234567890 email new@mail.com"),
+            ("edit-contact", "Edit a contact field by ID", "edit-contact <id> email new@mail.com"),
             ("edit-phone", "Change the primary phone", "edit-phone <id> 0991234567"),
             ("edit-email", "Change the contact email", "edit-email <id> new@mail.com"),
             ("delete-contact", "Delete a contact", "delete-contact <id>"),

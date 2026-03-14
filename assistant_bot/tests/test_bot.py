@@ -10,6 +10,7 @@ sys.path.insert(0, PROJECT_ROOT)
 from bot import (
     add_contact_command,
     change_command,
+    edit_command,
     change_email_command,
     delete_contact_command,
     phone_command,
@@ -133,6 +134,30 @@ def test_change_email(empty_book):
 
     updated_record = next(iter(empty_book.iter_records()))
     assert updated_record.email.value == "newcharlie@test.com"
+
+
+# -------------------------
+# TEST EDIT CONTACT BY ID
+# -------------------------
+def test_edit_contact_by_id(empty_book):
+    add_contact_command(["Diana", "5551234567", "diana@test.com"], empty_book)
+    record = next(iter(empty_book.iter_records()))
+
+    result = edit_command([record.id, "email", "newdiana@test.com"], empty_book)
+    assert result == "Email updated."
+
+    updated_record = next(iter(empty_book.iter_records()))
+    assert updated_record.email.value == "newdiana@test.com"
+
+
+# -------------------------
+# TEST EDIT CONTACT REJECTS PHONE LOOKUP
+# -------------------------
+def test_edit_contact_rejects_phone_lookup(empty_book):
+    add_contact_command(["Mark", "7771112233", "mark@test.com"], empty_book)
+
+    result = edit_command(["7771112233", "email", "newmark@test.com"], empty_book)
+    assert result == "Contact ID 7771112233 not found"
 
 
 # -------------------------
