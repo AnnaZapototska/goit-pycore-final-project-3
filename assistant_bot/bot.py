@@ -1,10 +1,9 @@
-from tabulate import tabulate
-
 from models.contacts import AddressBook, Record
-from models.notes import NotesBook, Note
+from models.notes import NotesBook, NotesList
 from models.fields import Email, Phone, Address
 from utils.decorators import input_error, require_args
 from utils.colors import AnsiColor
+
 
 @input_error
 @require_args(0, "hello")
@@ -42,7 +41,9 @@ def apply_contact_edit(record, field, new_value, book: AddressBook):
 
     if normalized_field == "email":
         validated_email = Email(new_value)
-        book.ensure_email_unique(validated_email.value, owner_phone=record.primary_phone.value)
+        book.ensure_email_unique(
+            validated_email.value, owner_phone=record.primary_phone.value
+        )
 
         if record.email is None:
             record.add_email(validated_email.value)
@@ -112,7 +113,9 @@ def change_email_command(args, book: AddressBook):
     record = resolve_record(record_id, book, require_id_only=True)
 
     validated_email = Email(new_email)
-    book.ensure_email_unique(validated_email.value, owner_phone=record.primary_phone.value)
+    book.ensure_email_unique(
+        validated_email.value, owner_phone=record.primary_phone.value
+    )
 
     if record.email is None:
         record.add_email(validated_email.value)
@@ -146,6 +149,7 @@ def phone_command(args, book: AddressBook):
     record = resolve_record(selector, book, require_id_only=False)
     return f"{record.name.value}'s primary phone number is {record.primary_phone.value}"
 
+
 # DELETE CONTACT
 @input_error
 @require_args(1, "delete <id>")
@@ -154,15 +158,20 @@ def delete_contact_command(args, book: AddressBook):
     record = resolve_record(record_id, book, require_id_only=True)
 
     while True:
-        confirm = input(
-            f"Are you sure you want to delete contact '{record.name.value}' [ID: {record.id}]? (Y/N): "
-        ).strip().lower()
+        confirm = (
+            input(
+                f"Are you sure you want to delete contact '{record.name.value}' [ID: {record.id}]? (Y/N): "
+            )
+            .strip()
+            .lower()
+        )
         if confirm in ("y", "yes"):
             book.delete(record.id)
             return "Contact deleted."
         if confirm in ("n", "no"):
             return "Delete canceled."
         print("Please enter Y or N.")
+
 
 # ADDRESS HELPERS
 def build_address():
@@ -280,8 +289,10 @@ def birthdays_command(args, book: AddressBook):
 def all_command(args, book: AddressBook):
     if not book or not book.data:
         return "No contacts found."
-    
-    return book.to_table(text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN)
+
+    return book.to_table(
+        text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
+    )
 
 
 # EXIT
@@ -298,6 +309,7 @@ def invalid_command(args, book: AddressBook):
 
 
 # --- notes commands ---
+
 
 @input_error
 @require_args(0, "add_note")
@@ -337,19 +349,7 @@ def show_notes_command(args, notes_book: NotesBook):
     if not notes_book:
         return "No notes found."
 
-    lines = []
-    for note in notes_book.iter_notes():
-        tags = getattr(note, "tags", set())
-        tags_str = ", ".join(sorted(tags)) if tags else "No tags"
-
-        lines.append(
-            f"[ID: {note.id}] Title: {note.title or 'Untitled'}\n"
-            f"Text: {note.text}\n"
-            f"Tags: {tags_str}\n"
-            f"Created: {note.created_at}\n"
-            "----------------------------"
-        )
-    return "\n".join(lines)
+    return notes_book.to_table()
 
 
 @input_error
@@ -398,9 +398,13 @@ def delete_note_command(args, notes_book: NotesBook):
     if not note_to_delete:
         raise ValueError(f"No note found with ID '{note_id}'.")
 
-    confirm = input(
-        f"Are you sure you want to delete note '{note_to_delete.title or 'Untitled'}'? (Y/N): "
-    ).strip().lower()
+    confirm = (
+        input(
+            f"Are you sure you want to delete note '{note_to_delete.title or 'Untitled'}'? (Y/N): "
+        )
+        .strip()
+        .lower()
+    )
     if confirm not in ("y", "yes"):
         return "Delete canceled."
 
@@ -415,32 +419,14 @@ def search_notes_command(args, notes_book: NotesBook):
     Searches notes by ID, title, or text (partial matches allowed).
     """
     keyword = args[0].lower()
-    results = []
 
-    for note in notes_book.data.values():
-        if (
-            keyword in note.id.lower()
-            or (note.title and keyword in note.title.lower())
-            or keyword in note.text.lower()
-        ):
-            results.append(note)
+    results = notes_book.search_notes(keyword)
 
     if not results:
         return f"No notes found matching '{keyword}'."
 
-    lines = []
-    for note in results:
-        tags = getattr(note, "tags", set())
-        tags_str = ", ".join(sorted(tags)) if tags else "No tags"
-
-        lines.append(
-            f"[ID: {note.id}] Title: {note.title or 'Untitled'}\n"
-            f"Text: {note.text}\n"
-            f"Tags: {tags_str}\n"
-            f"Created: {note.created_at}\n"
-            "----------------------------"
-        )
-    return "\n".join(lines)
+    notes_list = NotesList(results)
+    return notes_list.to_table()
 
 
 @input_error
@@ -476,11 +462,10 @@ def show_tags_command(args, notes_book: NotesBook):
     note_id = args[0]
     note = notes_book.get_note_by_id(note_id)
     tags = getattr(note, "tags", set())
-    
+
     if not tags:
         return f"Note [ID: {note_id}] has no tags."
     return f"Tags for note [ID: {note_id}]: {', '.join(sorted(tags))}"
-
 
 
 @input_error

@@ -2,6 +2,7 @@ from enum import Enum
 import shutil
 from tabulate import tabulate
 
+
 class AnsiColor(str, Enum):
     """ANSI escape codes for terminal coloring (no external deps)."""
 
@@ -34,16 +35,34 @@ class AnsiColor(str, Enum):
     def wrap(text: str, color: "AnsiColor") -> str:
         """Wrap text with one or more ANSI codes and reset at the end."""
         return AnsiColor.RESET + color + text + AnsiColor.RESET
-    
-def print_colored(text: str, color = AnsiColor.BRIGHT_CYAN):
+
+
+def print_colored(text: str, color=AnsiColor.BRIGHT_CYAN):
     """Print text wrapped in the specified ANSI color."""
     print(AnsiColor.wrap(text, color))
 
-def input_colored(prompt: str, color = AnsiColor.BRIGHT_CYAN) -> str:
+
+def input_colored(prompt: str, color=AnsiColor.BRIGHT_CYAN) -> str:
     """Get user input with a colored prompt."""
     return input(AnsiColor.wrap(prompt, color) + AnsiColor.BRIGHT_BLUE)
+
 
 def print_as_table(text: str):
     """Print text formatted as a table (for better readability)."""
     terminal_width = shutil.get_terminal_size((80, 20)).columns
-    print(AnsiColor.wrap(tabulate([[text]], tablefmt="grid", maxcolwidths=[terminal_width - 10]), AnsiColor.BRIGHT_CYAN))
+    print(
+        AnsiColor.wrap(
+            tabulate([[text]], tablefmt="grid", maxcolwidths=[terminal_width - 10]),
+            AnsiColor.BRIGHT_CYAN,
+        )
+    )
+
+
+def table_cell_colored_value(
+    value, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
+):
+    if value is None:
+        return None
+    return (
+        AnsiColor.RESET + text_color + " " + str(value) + AnsiColor.RESET + border_color
+    )

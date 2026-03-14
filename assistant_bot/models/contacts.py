@@ -2,7 +2,8 @@ from collections import UserDict, UserList
 from datetime import datetime, timedelta
 from .fields import Name, Phone, Email, Address, Birthday
 from tabulate import tabulate
-from utils.colors import AnsiColor
+from utils.colors import AnsiColor, table_cell_colored_value
+
 
 class Record:
     def __init__(self, name, primary_phone, record_id=None):
@@ -11,7 +12,7 @@ class Record:
         primary_phone: string
         record_id: string (optional) - assigned by AddressBook if None
         """
-        self.id = record_id            # sequential ID assigned later
+        self.id = record_id  # sequential ID assigned later
         self.name = Name(name)
         self.phones = [Phone(primary_phone)]
         self.email = None
@@ -78,8 +79,9 @@ class Record:
         raise ValueError(f"Phone number {phone} not found.")
 
     def __str__(self):
-        additional_phones = "; ".join(
-            p.value for p in self.phones[1:]) or "no additional phones"
+        additional_phones = (
+            "; ".join(p.value for p in self.phones[1:]) or "no additional phones"
+        )
         email_value = self.email.value if self.email else "no email"
         address_value = self.address.value if self.address else "no address"
 
@@ -90,42 +92,85 @@ class Record:
             f"email: {email_value}, "
             f"address: {address_value}"
         )
-    
-    def to_colored_dict(self, text_color=AnsiColor.CYAN, border_color=AnsiColor.WHITE):
+
+    def to_colored_dict(
+        self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
+    ):
         """
         Convert the Record to a dict with ANSI color codes for terminal display.
         """
-        def color_value(value):
-            if value is None:
-                return None
-            return AnsiColor.RESET + text_color + ' ' + str(value) + AnsiColor.RESET + border_color
-        
+
         result = {
-            "id": color_value(self.id),
-            "name": color_value(self.name.value),
-            "phones": "\n".join([color_value(p.value) for p in self.phones]) if self.phones != [] else None,
-            "email": color_value(self.email.value) if self.email else None,
-            "birthday": color_value(self.birthday.value.strftime("%d.%m.%Y")) if self.birthday else None,
-            "address": color_value(self.address.value) if self.address else None,
+            "id": table_cell_colored_value(self.id, text_color, border_color),
+            "name": table_cell_colored_value(self.name.value, text_color, border_color),
+            "phones": "\n".join(
+                [
+                    table_cell_colored_value(p.value, text_color, border_color)
+                    for p in self.phones
+                ]
+            )
+            if self.phones != []
+            else None,
+            "email": table_cell_colored_value(
+                self.email.value, text_color, border_color
+            )
+            if self.email
+            else None,
+            "birthday": table_cell_colored_value(
+                self.birthday.value.strftime("%d.%m.%Y"), text_color, border_color
+            )
+            if self.birthday
+            else None,
+            "address": table_cell_colored_value(
+                self.address.value, text_color, border_color
+            )
+            if self.address
+            else None,
         }
-        
+
         return result
 
-    def to_table(self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN):
+    def to_table(
+        self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
+    ):
         """
         Convert the Record to a table with ANSI color codes for terminal display.
         """
-        return AnsiColor.wrap(tabulate([self.to_colored_dict(text_color, border_color)], headers="keys", tablefmt="fancy_grid"), border_color)
+        return AnsiColor.wrap(
+            tabulate(
+                [self.to_colored_dict(text_color, border_color)],
+                headers="keys",
+                tablefmt="fancy_grid",
+            ),
+            border_color,
+        )
+
 
 class RecordList(UserList):
-    def to_table(self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN):
+    def to_table(
+        self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
+    ):
         """
         Convert the list of records to a table with ANSI color codes for terminal display.
         """
-        return AnsiColor.wrap(tabulate([record.to_colored_dict(text_color, border_color) for record in self.data], headers="keys", tablefmt="fancy_grid"), border_color)
+
+        if not self.data:
+            return AnsiColor.wrap("No contacts found.", text_color)
+
+        return AnsiColor.wrap(
+            tabulate(
+                [
+                    record.to_colored_dict(text_color, border_color)
+                    for record in self.data
+                ],
+                headers="keys",
+                tablefmt="fancy_grid",
+            ),
+            border_color,
+        )
+
 
 class AddressBook(UserDict):
-
     def add_record(self, record: Record):
         """
         Adds a new contact to the AddressBook.
@@ -147,7 +192,6 @@ class AddressBook(UserDict):
         # Store the record using the ID as the key
         self.data[record.id] = record
 
-
     def iter_records(self):
         return self.data.values()
 
@@ -160,8 +204,7 @@ class AddressBook(UserDict):
 
     def find_by_name(self, name: str):
         normalized_name = str(name).strip()
-        return [r for r in self.iter_records() if r.name.value ==
-                normalized_name]
+        return [r for r in self.iter_records() if r.name.value == normalized_name]
 
     def find_by_email(self, email: str):
         normalized_email = str(email).strip()
@@ -190,7 +233,7 @@ class AddressBook(UserDict):
         for record in self.data.values():
             if record.primary_phone.value == normalized_selector:
                 return record
-            
+
         for record in self.data.values():
             if record.email and record.email.value == normalized_selector:
                 return record
@@ -198,10 +241,7 @@ class AddressBook(UserDict):
         # Not found
         return None
 
-    def ensure_primary_phone_unique(
-            self,
-            phone: str,
-            owner_phone: str | None = None):
+    def ensure_primary_phone_unique(self, phone: str, owner_phone: str | None = None):
         normalized_phone = Phone(phone).value
         existing_record = self.data.get(normalized_phone)
 
@@ -234,7 +274,6 @@ class AddressBook(UserDict):
 
         raise ValueError("Phone number must be unique.")
 
-
     def replace_primary_phone(self, record_id: str, new_phone: str):
         """
         Change the primary phone of a contact.
@@ -249,8 +288,7 @@ class AddressBook(UserDict):
         normalized_new = Phone(new_phone).value
 
         self.ensure_primary_phone_unique(
-            normalized_new,
-            owner_phone=record.primary_phone.value
+            normalized_new, owner_phone=record.primary_phone.value
         )
         record.set_primary_phone(normalized_new)
 
@@ -259,7 +297,6 @@ class AddressBook(UserDict):
         results = []
 
         for record in self.iter_records():
-
             if normalized_query in record.name.value.lower():
                 results.append(record)
                 continue
@@ -293,13 +330,11 @@ class AddressBook(UserDict):
             birthday_this_year = record.birthday.value.replace(year=today.year)
 
             if birthday_this_year < today:
-                birthday_this_year = birthday_this_year.replace(
-                    year=today.year + 1)
+                birthday_this_year = birthday_this_year.replace(year=today.year + 1)
 
             days_until_birthday = (birthday_this_year - today).days
 
             if 0 <= days_until_birthday <= 7:
-
                 congratulation_date = birthday_this_year
 
                 if congratulation_date.weekday() == 5:
@@ -315,9 +350,23 @@ class AddressBook(UserDict):
             return ["No upcoming birthdays within the next week."]
 
         return upcoming_birthdays
-    
-    def to_colored_dict(self, text_color=AnsiColor.BRIGHT_CYAN, border_color=AnsiColor.BRIGHT_WHITE):
-        return [record.to_colored_dict(text_color, border_color) for record in self.data.values()]
-    
-    def to_table(self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN):
-        return AnsiColor.wrap(tabulate(self.to_colored_dict(text_color, border_color), headers="keys", tablefmt="fancy_grid"), border_color)
+
+    def to_colored_dict(
+        self, text_color=AnsiColor.BRIGHT_CYAN, border_color=AnsiColor.BRIGHT_WHITE
+    ):
+        return [
+            record.to_colored_dict(text_color, border_color)
+            for record in self.data.values()
+        ]
+
+    def to_table(
+        self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
+    ):
+        return AnsiColor.wrap(
+            tabulate(
+                self.to_colored_dict(text_color, border_color),
+                headers="keys",
+                tablefmt="fancy_grid",
+            ),
+            border_color,
+        )

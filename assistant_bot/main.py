@@ -1,5 +1,4 @@
 from utils.helper import parse_input, get_command_suggestions, ask_confirmation
-
 from bot import (
     add_contact_command,
     change_command,
@@ -18,14 +17,12 @@ from bot import (
     remove_address_command,
     all_command,
     hello_command,
-
     # notes
     add_note_command,
     show_notes_command,
     edit_note_command,
     delete_note_command,
     search_notes_command,
-
     # tags
     add_tag_command,
     remove_tag_command,
@@ -34,16 +31,13 @@ from bot import (
     sort_notes_by_tags_command,
     all_tags_command,
 )
-
 from storage import (
     load_data_contacts,
     save_data_contacts,
     load_data_notes,
     save_data_notes,
 )
-
 from utils.colors import print_colored, input_colored, print_as_table
-import shutil
 
 
 def main():
@@ -56,7 +50,7 @@ def main():
         try:
             user_input = input_colored("assistant> ")
         except KeyboardInterrupt:
-            print() # new line after Ctrl+C
+            print()  # new line after Ctrl+C
             print_as_table("Good bye!")
             break
 
@@ -82,7 +76,9 @@ def main():
                 else:
                     other_suggestions = suggestions[1:]
                     if other_suggestions:
-                        print_colored("Other suggestions: " + ", ".join(other_suggestions))
+                        print_colored(
+                            "Other suggestions: " + ", ".join(other_suggestions)
+                        )
                     else:
                         print_colored("No other suggestions found.")
                     continue
@@ -112,7 +108,6 @@ def main():
         if isinstance(result, str) and "═" in result:
             print(result)
         else:
-            terminal_width = shutil.get_terminal_size((80, 20)).columns
             print_as_table(result)
 
         save_data_contacts(book)
@@ -129,7 +124,6 @@ COMMANDS = {
     "search": search_command,
     "exit": close_command,
     "close": close_command,
-
     # contacts
     "add": add_contact_command,
     "edit": edit_command,
@@ -144,14 +138,12 @@ COMMANDS = {
     "add-birthday": add_birthday_command,
     "show-birthday": show_birthday_command,
     "birthdays": birthdays_command,
-
     # notes
     "add_note": add_note_command,
     "show_notes": show_notes_command,
     "edit_note": edit_note_command,
     "delete_note": delete_note_command,
     "search_notes": search_notes_command,
-
     # tags
     "add-tag": add_tag_command,
     "remove-tag": remove_tag_command,
