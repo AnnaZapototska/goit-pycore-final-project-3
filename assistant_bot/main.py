@@ -19,6 +19,7 @@ from bot import (
     remove_address_command,
     all_command,
     hello_command,
+    help_command,
 
     # contact groups
     add_group_command,
