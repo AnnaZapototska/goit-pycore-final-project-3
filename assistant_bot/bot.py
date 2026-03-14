@@ -113,9 +113,7 @@ def change_email_command(args, book: AddressBook):
     record = resolve_record(record_id, book, require_id_only=True)
 
     validated_email = Email(new_email)
-    book.ensure_email_unique(
-        validated_email.value, owner_phone=record.primary_phone.value
-    )
+    book.ensure_email_unique(validated_email.value, record_id)
 
     if record.email is None:
         record.add_email(validated_email.value)
@@ -297,8 +295,7 @@ def birthdays_command(args, book: AddressBook):
 
     # Return table
     return temp_book.to_table(
-        text_color=AnsiColor.BRIGHT_GREEN,
-        border_color=AnsiColor.BRIGHT_CYAN
+        text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
     )
 
 
@@ -499,16 +496,8 @@ def search_tag_command(args, notes_book: NotesBook):
     if not results:
         return f"No notes found with tag '{tag}'."
 
-    lines = []
-    for note in results:
-        lines.append(
-            f"[ID: {note.id}] Title: {note.title or 'Untitled'}\n"
-            f"Text: {note.text}\n"
-            f"Tags: {', '.join(sorted(note.tags)) if note.tags else 'No tags'}\n"
-            f"Created: {note.created_at}\n"
-            "----------------------------"
-        )
-    return "\n".join(lines)
+    notes_list = NotesList(results)
+    return notes_list.to_table()
 
 
 @input_error
@@ -522,16 +511,8 @@ def sort_notes_by_tags_command(args, notes_book: NotesBook):
     if not results:
         return "No notes found."
 
-    lines = []
-    for note in results:
-        lines.append(
-            f"[ID: {note.id}] Title: {note.title or 'Untitled'}\n"
-            f"Text: {note.text}\n"
-            f"Tags: {', '.join(sorted(note.tags)) if note.tags else 'No tags'}\n"
-            f"Created: {note.created_at}\n"
-            "----------------------------"
-        )
-    return "\n".join(lines)
+    notes_list = NotesList(results)
+    return notes_list.to_table()
 
 
 @input_error
