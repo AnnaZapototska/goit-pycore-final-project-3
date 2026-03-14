@@ -25,7 +25,7 @@ from bot import (
     show_notes_command,
     edit_note_command,
     delete_note_command,
-    search_notes_command
+    search_notes_command,
 )
 from models.contacts import AddressBook
 from models.notes import NotesBook, Note
@@ -35,13 +35,16 @@ from utils.help_view import build_welcome_message
 # Fixtures
 # --------------------------
 
+
 @pytest.fixture
 def empty_book():
     return AddressBook()
 
+
 @pytest.fixture
 def notes_book():
     return NotesBook()
+
 
 # --------------------------
 # TESTS
@@ -84,6 +87,7 @@ def test_help_command_contains_grouped_tables(empty_book):
     assert "add-contact" in result
     assert "add-note" in result
     assert "add-note-tag" in result
+
 
 # -------------------------
 # TEST ADD CONTACT
@@ -264,7 +268,7 @@ def test_add_note_command(monkeypatch, notes_book):
     # Simulate user input for title and text interactively
     inputs = iter(["My Note", "", "This is the note text"])
     monkeypatch.setattr("builtins.input", lambda _: next(inputs))
-    
+
     # Call command with empty args to trigger interactive mode
     result = add_note_command([], notes_book)
     assert "added successfully" in result
@@ -273,15 +277,17 @@ def test_add_note_command(monkeypatch, notes_book):
     assert note.title == "My Note"
     assert note.text == "This is the note text"
 
+
 def test_show_notes_command(notes_book):
     # Add notes directly
     note = Note("Some text", title="Test Note")
     notes_book.data[note.id] = note
-    
+
     output = show_notes_command([], notes_book)
     assert "Test Note" in output
     assert "Some text" in output
     assert note.id in output
+
 
 def test_edit_note_command(monkeypatch, notes_book):
     # Add a note
@@ -299,6 +305,7 @@ def test_edit_note_command(monkeypatch, notes_book):
     assert updated_note.title == "New Title"
     assert updated_note.text == "Updated text"
 
+
 def test_delete_note_command(monkeypatch, notes_book):
     # Add a note
     note = Note("Delete this note", title="ToDelete")
@@ -310,6 +317,7 @@ def test_delete_note_command(monkeypatch, notes_book):
     result = delete_note_command([note.id], notes_book)
     assert "deleted successfully" in result
     assert note.id not in notes_book.data
+
 
 def test_search_notes_command(notes_book):
     note1 = Note("Buy milk", title="Shopping")

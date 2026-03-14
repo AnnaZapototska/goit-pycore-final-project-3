@@ -1,5 +1,4 @@
 from utils.helper import parse_input, get_command_suggestions, ask_confirmation
-
 from bot import (
     add_contact_command,
     change_command,
@@ -19,14 +18,12 @@ from bot import (
     all_command,
     hello_command,
     help_command,
-
     # notes
     add_note_command,
     show_notes_command,
     edit_note_command,
     delete_note_command,
     search_notes_command,
-
     # tags
     add_tag_command,
     remove_tag_command,
@@ -35,7 +32,6 @@ from bot import (
     sort_notes_by_tags_command,
     all_tags_command,
 )
-
 from storage import (
     load_data_contacts,
     save_data_contacts,
@@ -43,10 +39,8 @@ from storage import (
     save_data_notes,
 )
 
-from utils.colors import print_colored, input_colored
+from utils.colors import print_colored, input_colored, print_as_table
 from utils.help_view import build_welcome_message
-from tabulate import tabulate
-import shutil
 
 
 def main():
@@ -59,7 +53,8 @@ def main():
         try:
             user_input = input_colored("assistant> ")
         except KeyboardInterrupt:
-            print_colored("\nGood bye!")
+            print()  # new line after Ctrl+C
+            print_as_table("Good bye!")
             break
 
         command, args = parse_input(user_input)
@@ -84,7 +79,9 @@ def main():
                 else:
                     other_suggestions = suggestions[1:]
                     if other_suggestions:
-                        print_colored("Other suggestions: " + ", ".join(other_suggestions))
+                        print_colored(
+                            "Other suggestions: " + ", ".join(other_suggestions)
+                        )
                     else:
                         print_colored("No other suggestions found.")
                     continue
@@ -114,10 +111,7 @@ def main():
         if isinstance(result, str) and "═" in result:
             print(result)
         else:
-            terminal_width = shutil.get_terminal_size((80, 20)).columns
-            print_colored(
-                tabulate([[result]], tablefmt="grid", maxcolwidths=[terminal_width - 10])
-            )
+            print_as_table(result)
 
         save_data_contacts(book)
         save_data_notes(notes_book)
@@ -134,7 +128,6 @@ COMMANDS = {
     "search-contact": search_command,
     "exit": close_command,
     "close": close_command,
-
     # contacts
     "add-contact": add_contact_command,
     "edit-contact": edit_command,
@@ -149,14 +142,12 @@ COMMANDS = {
     "add-birthday": add_birthday_command,
     "show-birthday": show_birthday_command,
     "all-birthdays": birthdays_command,
-
     # notes
     "add-note": add_note_command,
     "all-notes": show_notes_command,
     "edit-note": edit_note_command,
     "delete-note": delete_note_command,
     "search-notes": search_notes_command,
-
     # tags
     "add-note-tag": add_tag_command,
     "remove-note-tag": remove_tag_command,

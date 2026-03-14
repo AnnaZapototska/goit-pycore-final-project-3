@@ -1,5 +1,6 @@
 from difflib import get_close_matches
 
+
 def parse_input(user_input: str):
     """
     Parse raw user input into command and arguments.
