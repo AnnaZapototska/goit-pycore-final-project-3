@@ -1,11 +1,10 @@
 import re
-from datetime import datetime
+from datetime import datetime, date
 
 class Field:
     def __init__(self, value):
-        normalized = self.normalize(value)
-        self.validate(normalized)
-        self._value = normalized
+        self._value = None
+        self.value = value  # This will trigger normalization and validation
 
     def __str__(self):
         return str(self._value)
@@ -73,5 +72,5 @@ class Birthday(Field):
             return None
 
     def validate(self, value):
-        if not isinstance(value, datetime.date):
+        if value is None:
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
