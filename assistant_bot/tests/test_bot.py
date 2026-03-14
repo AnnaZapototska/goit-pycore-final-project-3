@@ -22,6 +22,10 @@ from bot import (
     all_command,
     hello_command,
     help_command,
+    help_global_command,
+    help_contacts_command,
+    help_notes_command,
+    help_tags_command,
     add_note_command,
     show_notes_command,
     edit_note_command,
@@ -65,7 +69,16 @@ def test_welcome_message_contains_drevo_and_hint():
     assert "█████╗" in result
     assert "PERSONAL ASSISTANT BOT" in result
     assert "Contacts • Notes" in result
-    assert 'Type "help" to see commands' in result
+    assert "help" in result
+    assert "help-global" in result
+    assert "help-contacts" in result
+    assert "help-notes" in result
+    assert "help-tags" in result
+    assert "to see all commands" in result
+    assert "to see global commands" in result
+    assert "to see contacts commands" in result
+    assert "to see notes commands" in result
+    assert "to see tags commands" in result
 
 
 # -------------------------
@@ -84,10 +97,66 @@ def test_help_command_contains_grouped_tables(empty_book):
     assert "Add a new contact" in result
     assert "Create a new note" in result
     assert "Add a tag to a note" in result
+    assert "help-global" in result
+    assert "help-contacts" in result
+    assert "help-notes" in result
+    assert "help-tags" in result
     assert "all-contacts" in result
     assert "add-contact" in result
     assert "add-note" in result
     assert "add-note-tag" in result
+
+
+# -------------------------
+# TEST HELP GLOBAL COMMAND
+# -------------------------
+def test_help_global_command(empty_book):
+    result = help_global_command([], empty_book)
+    assert "help-global" in result
+    assert "to see global commands" in result
+    assert "Global" in result
+    assert "Contacts" not in result
+    assert "Notes" not in result
+    assert "Tags" not in result
+
+
+# -------------------------
+# TEST HELP CONTACTS COMMAND
+# -------------------------
+def test_help_contacts_command(empty_book):
+    result = help_contacts_command([], empty_book)
+    assert "help-contacts" in result
+    assert "to see contacts commands" in result
+    assert "Contacts" in result
+    assert "Global" not in result
+    assert "Notes" not in result
+    assert "Tags" not in result
+
+
+# -------------------------
+# TEST HELP NOTES COMMAND
+# -------------------------
+def test_help_notes_command(empty_book):
+    result = help_notes_command([], empty_book)
+    assert "help-notes" in result
+    assert "to see notes commands" in result
+    assert "Notes" in result
+    assert "Global" not in result
+    assert "Contacts" not in result
+    assert "Tags" not in result
+
+
+# -------------------------
+# TEST HELP TAGS COMMAND
+# -------------------------
+def test_help_tags_command(empty_book):
+    result = help_tags_command([], empty_book)
+    assert "help-tags" in result
+    assert "to see tags commands" in result
+    assert "Tags" in result
+    assert "Global" not in result
+    assert "Contacts" not in result
+    assert "Notes" not in result
 
 
 # -------------------------
