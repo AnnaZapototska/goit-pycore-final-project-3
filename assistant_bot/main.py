@@ -1,29 +1,32 @@
 from utils.helper import parse_input, get_command_suggestions, ask_confirmation
 
 from bot import (
-    add_contact,
+    add_contact_command,
     change_command,
     edit_command,
     change_email_command,
     delete_contact_command,
     close_command,
     phone_command,
-    add_birthday,
+    add_birthday_command,
     search_command,
-    show_birthday,
-    birthdays,
+    show_birthday_command,
+    birthdays_command,
     add_address_command,
     edit_address_command,
     show_address_command,
     remove_address_command,
     all_command,
-    invalid_command,
     hello_command,
+
+    # notes
     add_note_command,
     show_notes_command,
     edit_note_command,
     delete_note_command,
     search_notes_command,
+
+    # tags
     add_tag_command,
     remove_tag_command,
     show_tags_command,
@@ -39,55 +42,28 @@ from storage import (
     save_data_notes,
 )
 
+from utils.colors import print_colored, input_colored
+from tabulate import tabulate
+import shutil
+
 
 def main():
     book = load_data_contacts()
     notes_book = load_data_notes()
 
-    print("Welcome to the assistant bot!")
-    print(
-        "Available commands: "
-        "hello, "
-        "add, "
-        "edit, "
-        "change, "
-        "change-email, "
-        "delete,"
-        "phone, "
-        "search, "
-        "add-address, "
-        "edit-address, "
-        "show-address, "
-        "remove-address, "
-        "add-birthday <DD.MM.YYYY>, "
-        "show-birthday, "
-        "birthdays, "
-        "all, "
-        "exit / close, "
-        "add_note, "
-        "show_notes, "
-        "edit_note, "
-        "delete_note, "
-        "search_notes <keyword>, "
-        "add-tag, "
-        "remove-tag, "
-        "show-tags, "
-        "search-tag, "
-        "sort-notes-by-tags, "
-        "all-tags"
-    )
+    print_colored("Welcome to the assistant bot!")
 
     while True:
         try:
-            user_input = input("Enter a command: ")
+            user_input = input_colored("assistant> ")
         except KeyboardInterrupt:
-            print("\nGood bye!")
+            print_colored("\nGood bye!")
             break
 
         command, args = parse_input(user_input)
 
         if not command:
-            print("Please enter a command.")
+            print_colored("Please enter a command.")
             continue
 
         command_action = COMMANDS.get(command)
@@ -97,22 +73,21 @@ def main():
 
             if suggestions:
                 main_suggestion = suggestions[0]
-                print(f"Invalid command. Did you mean: {main_suggestion}?")
+                print_colored(f"Invalid command. Did you mean: {main_suggestion}?")
 
                 if ask_confirmation():
                     command = main_suggestion
                     command_action = COMMANDS.get(command)
-                    print(f"Running: {command}")
+                    print_colored(f"Running: {command}")
                 else:
                     other_suggestions = suggestions[1:]
                     if other_suggestions:
-                        print("Other suggestions: " + ", ".join(other_suggestions))
+                        print_colored("Other suggestions: " + ", ".join(other_suggestions))
                     else:
-                        print("No other suggestions found.")
-                    print("Please type the command manually.")
+                        print_colored("No other suggestions found.")
                     continue
             else:
-                print("Invalid command.")
+                print_colored("Invalid command.")
                 continue
 
         notes_commands = {
@@ -134,7 +109,13 @@ def main():
         else:
             result = command_action(args, book)
 
-        print(result)
+        if isinstance(result, str) and "═" in result:
+            print(result)
+        else:
+            terminal_width = shutil.get_terminal_size((80, 20)).columns
+            print_colored(
+                tabulate([[result]], tablefmt="grid", maxcolwidths=[terminal_width - 10])
+            )
 
         save_data_contacts(book)
         save_data_notes(notes_book)
@@ -144,13 +125,15 @@ def main():
 
 
 COMMANDS = {
+    # global
     "hello": hello_command,
     "all": all_command,
     "search": search_command,
     "exit": close_command,
     "close": close_command,
 
-    "add": add_contact,
+    # contacts
+    "add": add_contact_command,
     "edit": edit_command,
     "change": change_command,
     "change-email": change_email_command,
@@ -160,15 +143,18 @@ COMMANDS = {
     "edit-address": edit_address_command,
     "show-address": show_address_command,
     "remove-address": remove_address_command,
-    "add-birthday": add_birthday,
-    "show-birthday": show_birthday,
-    "birthdays": birthdays,
+    "add-birthday": add_birthday_command,
+    "show-birthday": show_birthday_command,
+    "birthdays": birthdays_command,
 
+    # notes
     "add_note": add_note_command,
     "show_notes": show_notes_command,
     "edit_note": edit_note_command,
     "delete_note": delete_note_command,
     "search_notes": search_notes_command,
+
+    # tags
     "add-tag": add_tag_command,
     "remove-tag": remove_tag_command,
     "show-tags": show_tags_command,

@@ -1,8 +1,10 @@
+from tabulate import tabulate
+
 from models.contacts import AddressBook, Record
 from models.notes import NotesBook, Note
 from models.fields import Email, Phone, Address
 from utils.decorators import input_error, require_args
-
+from utils.colors import AnsiColor
 
 @input_error
 @require_args(0, "hello")
@@ -68,7 +70,7 @@ def apply_contact_edit(record, field, new_value, book: AddressBook):
 
 # ADD CONTACT
 @input_error
-def add_contact(args, book: AddressBook):
+def add_contact_command(args, book: AddressBook):
     if len(args) not in (2, 3):
         return "Usage: add <name> <phone> [email]"
 
@@ -237,13 +239,13 @@ def search_command(args, book: AddressBook):
     results = book.search(query)
     if not results:
         return "No contacts found."
-    return "\n".join(str(record) for record in results)
+    return results.to_table()
 
 
 # BIRTHDAY
 @input_error
 @require_args(2, "add-birthday <id> <DD.MM.YYYY>")
-def add_birthday(args, book: AddressBook):
+def add_birthday_command(args, book: AddressBook):
     selector, birthday = args
     record = resolve_record(selector, book, require_id_only=False)
     record.add_birthday(birthday)
@@ -252,7 +254,7 @@ def add_birthday(args, book: AddressBook):
 
 @input_error
 @require_args(1, "show-birthday <id>")
-def show_birthday(args, book: AddressBook):
+def show_birthday_command(args, book: AddressBook):
     selector = args[0]
     record = resolve_record(selector, book, require_id_only=False)
     if not record.birthday:
@@ -263,7 +265,7 @@ def show_birthday(args, book: AddressBook):
 
 @input_error
 @require_args(0, "birthdays")
-def birthdays(args, book: AddressBook):
+def birthdays_command(args, book: AddressBook):
     upcoming = book.get_upcoming_birthdays()
 
     if not upcoming:
@@ -278,26 +280,8 @@ def birthdays(args, book: AddressBook):
 def all_command(args, book: AddressBook):
     if not book or not book.data:
         return "No contacts found."
-
-    lines = []
-
-    for record in book.iter_records():
-        email = record.email.value if record.email else "no email"
-        address = record.address.value if record.address else "no address"
-        birthday = record.birthday.value.strftime("%d.%m.%Y") if record.birthday else "no birthday"
-
-        line = (
-            f"[ID: {record.id}] "
-            f"Name: {record.name.value}, "
-            f"Phone: {record.primary_phone.value}, "
-            f"Email: {email}, "
-            f"Address: {address}, "
-            f"Birthday: {birthday}"
-        )
-
-        lines.append(line)
-
-    return "\n".join(lines)
+    
+    return book.to_table(text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN)
 
 
 # EXIT

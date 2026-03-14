@@ -1,6 +1,8 @@
-from collections import UserDict
+from collections import UserDict, UserList
 from datetime import datetime, timedelta
 from .fields import Name, Phone, Email, Address, Birthday
+from tabulate import tabulate
+from utils.colors import AnsiColor
 
 class Record:
     def __init__(self, name, primary_phone, record_id=None):
@@ -88,7 +90,39 @@ class Record:
             f"email: {email_value}, "
             f"address: {address_value}"
         )
+    
+    def to_colored_dict(self, text_color=AnsiColor.CYAN, border_color=AnsiColor.WHITE):
+        """
+        Convert the Record to a dict with ANSI color codes for terminal display.
+        """
+        def color_value(value):
+            if value is None:
+                return None
+            return AnsiColor.RESET + text_color + ' ' + str(value) + AnsiColor.RESET + border_color
+        
+        result = {
+            "id": color_value(self.id),
+            "name": color_value(self.name.value),
+            "phones": "\n".join([color_value(p.value) for p in self.phones]) if self.phones != [] else None,
+            "email": color_value(self.email.value) if self.email else None,
+            "birthday": color_value(self.birthday.value.strftime("%d.%m.%Y")) if self.birthday else None,
+            "address": color_value(self.address.value) if self.address else None,
+        }
+        
+        return result
 
+    def to_table(self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN):
+        """
+        Convert the Record to a table with ANSI color codes for terminal display.
+        """
+        return AnsiColor.wrap(tabulate([self.to_colored_dict(text_color, border_color)], headers="keys", tablefmt="fancy_grid"), border_color)
+
+class RecordList(UserList):
+    def to_table(self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN):
+        """
+        Convert the list of records to a table with ANSI color codes for terminal display.
+        """
+        return AnsiColor.wrap(tabulate([record.to_colored_dict(text_color, border_color) for record in self.data], headers="keys", tablefmt="fancy_grid"), border_color)
 
 class AddressBook(UserDict):
 
@@ -238,7 +272,7 @@ class AddressBook(UserDict):
             if record.email and normalized_query in record.email.value.lower():
                 results.append(record)
 
-        return results
+        return RecordList(results)
 
     def delete(self, record_id: str):
         normalized_id = str(record_id).strip()
@@ -281,3 +315,9 @@ class AddressBook(UserDict):
             return ["No upcoming birthdays within the next week."]
 
         return upcoming_birthdays
+    
+    def to_colored_dict(self, text_color=AnsiColor.BRIGHT_CYAN, border_color=AnsiColor.BRIGHT_WHITE):
+        return [record.to_colored_dict(text_color, border_color) for record in self.data.values()]
+    
+    def to_table(self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN):
+        return AnsiColor.wrap(tabulate(self.to_colored_dict(text_color, border_color), headers="keys", tablefmt="fancy_grid"), border_color)
