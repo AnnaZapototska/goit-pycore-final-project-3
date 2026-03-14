@@ -1,6 +1,7 @@
 from collections import UserDict, UserList
 from datetime import datetime, timedelta
 from tabulate import tabulate
+
 from .fields import Name, Phone, Email, Address, Birthday
 from utils.colors import AnsiColor
 
@@ -20,10 +21,17 @@ class Record:
         self.email = None
         self.birthday = None
         self.address = None
+        self.groups = set()
 
     @property
     def primary_phone(self):
         return self.phones[0]
+
+    def ensure_groups_initialized(self):
+        if not hasattr(self, "groups") or self.groups is None:
+            self.groups = set()
+        elif not isinstance(self.groups, set):
+            self.groups = set(self.groups)
 
     def set_name(self, name):
         self.name = Name(name)
@@ -70,6 +78,37 @@ class Record:
     def get_address(self):
         return self.address.value if self.address else "no address"
 
+    def add_group(self, group: str):
+        self.ensure_groups_initialized()
+        normalized_group = str(group).strip().lower()
+        if not normalized_group:
+            raise ValueError("Group name cannot be empty.")
+        self.groups.add(normalized_group)
+
+    def remove_group(self, group: str):
+        self.ensure_groups_initialized()
+        normalized_group = str(group).strip().lower()
+        if normalized_group not in self.groups:
+            raise ValueError(f"Contact is not in group '{normalized_group}'.")
+        self.groups.remove(normalized_group)
+
+    def clear_groups(self):
+        self.ensure_groups_initialized()
+        self.groups.clear()
+
+    def has_group(self, group: str):
+        self.ensure_groups_initialized()
+        normalized_group = str(group).strip().lower()
+        return normalized_group in self.groups
+
+    def get_groups_list(self):
+        self.ensure_groups_initialized()
+        return sorted(self.groups)
+
+    def get_groups_display(self):
+        self.ensure_groups_initialized()
+        return ", ".join(self.get_groups_list()) if self.groups else "no groups"
+
     def remove_phone(self, phone: str):
         normalized_phone = Phone(phone).value
         if len(self.phones) == 1 and self.phones[0].value == normalized_phone:
@@ -108,7 +147,8 @@ class Record:
             f"phones: {self.get_phones_display()}, "
             f"email: {email_value}, "
             f"birthday: {birthday_value}, "
-            f"address: {address_value}"
+            f"address: {address_value}, "
+            f"groups: {self.get_groups_display()}"
         )
 
     def to_colored_dict(self, text_color=AnsiColor.CYAN, border_color=AnsiColor.WHITE):
@@ -124,40 +164,123 @@ class Record:
             "email": color_value(self.email.value) if self.email else None,
             "birthday": color_value(self.birthday.value.strftime("%d.%m.%Y")) if self.birthday else None,
             "address": color_value(self.address.value) if self.address else None,
+            "groups": color_value(self.get_groups_display()),
         }
 
     def to_table(self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN):
-        return AnsiColor.wrap(tabulate([self.to_colored_dict(text_color, border_color)], headers="keys", tablefmt="fancy_grid"), border_color)
+        return AnsiColor.wrap(
+            tabulate(
+                [self.to_colored_dict(text_color, border_color)],
+                headers="keys",
+                tablefmt="fancy_grid"
+            ),
+            border_color
+        )
 
 
 class RecordList(UserList):
     def to_table(self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN):
-        return AnsiColor.wrap(tabulate([record.to_colored_dict(text_color, border_color) for record in self.data], headers="keys", tablefmt="fancy_grid"), border_color)
+        return AnsiColor.wrap(
+            tabulate(
+                [record.to_colored_dict(text_color, border_color) for record in self.data],
+                headers="keys",
+                tablefmt="fancy_grid"
+            ),
+            border_color
+        )
 
 
 class AddressBook(UserDict):
-    def add_record(self, record: Record):
+    DEFAULT_GROUPS = {"family", "work", "friends"}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ensure_groups_storage()
+
+    def ensure_groups_storage(self):
+        if not hasattr(self, "available_groups") or self.available_groups is None:
+            self.available_groups = set(self.DEFAULT_GROUPS)
+        elif not isinstance(self.available_groups, set):
+            self.available_groups = set(self.available_groups)
+
+        if not self.available_groups:
+            self.available_groups = set(self.DEFAULT_GROUPS)
+
+        for record in self.data.values():
+            if hasattr(record, "ensure_groups_initialized"):
+                record.ensure_groups_initialized()
+            elif not hasattr(record, "groups") or record.groups is None:
+                record.groups = set()
+
+    def normalize_group_name(self, group: str):
+        normalized_group = str(group).strip().lower()
+        if not normalized_group:
+            raise ValueError("Group name cannot be empty.")
+        return normalized_group
+
+    def add_group(self, group: str):
+        self.ensure_groups_storage()
+        normalized_group = self.normalize_group_name(group)
+        if normalized_group in self.available_groups:
+            raise ValueError(f"Group '{normalized_group}' already exists.")
+        self.available_groups.add(normalized_group)
+
+    def get_all_groups(self):
+        self.ensure_groups_storage()
+        return sorted(self.available_groups)
+
+    def ensure_group_exists(self, group: str):
+        self.ensure_groups_storage()
+        normalized_group = self.normalize_group_name(group)
+        if normalized_group not in self.available_groups:
+            raise ValueError(f"Group '{normalized_group}' does not exist.")
+        return normalized_group
+
+    def delete_group(self, group: str):
+        self.ensure_groups_storage()
+        normalized_group = self.ensure_group_exists(group)
+        self.available_groups.remove(normalized_group)
+
+        for record in self.iter_records():
+            record.ensure_groups_initialized()
+            if normalized_group in record.groups:
+                record.groups.remove(normalized_group)
+
+    def add_record(self, record: "Record"):
+        self.ensure_groups_storage()
+        if hasattr(record, "ensure_groups_initialized"):
+            record.ensure_groups_initialized()
+
         for phone_obj in record.phones:
             self.ensure_phone_unique(phone_obj.value)
+
         if record.id is None:
             next_id = str(max([int(rid) for rid in self.data.keys()] + [0]) + 1)
             record.id = next_id
+
         self.data[record.id] = record
 
     def iter_records(self):
+        self.ensure_groups_storage()
         return self.data.values()
 
     def find(self, primary_phone: str):
         return self.find_by_phone(primary_phone)
 
     def find_by_id(self, record_id: str):
-        return self.data.get(str(record_id).strip())
+        self.ensure_groups_storage()
+        record = self.data.get(str(record_id).strip())
+        if record and hasattr(record, "ensure_groups_initialized"):
+            record.ensure_groups_initialized()
+        return record
 
     def find_by_name(self, name: str):
+        self.ensure_groups_storage()
         normalized_name = str(name).strip()
         return [r for r in self.iter_records() if r.name.value == normalized_name]
 
     def find_by_email(self, email: str):
+        self.ensure_groups_storage()
         normalized_email = str(email).strip()
         for r in self.iter_records():
             if r.email and r.email.value == normalized_email:
@@ -165,6 +288,7 @@ class AddressBook(UserDict):
         return None
 
     def find_by_phone(self, phone: str):
+        self.ensure_groups_storage()
         try:
             normalized = Phone(phone).value
         except ValueError:
@@ -176,8 +300,14 @@ class AddressBook(UserDict):
         return None
 
     def find_by_selector(self, selector: str):
-        r = self.find_by_id(selector) or self.find_by_phone(selector) or self.find_by_email(selector)
-        return r
+        self.ensure_groups_storage()
+        return self.find_by_id(selector) or self.find_by_phone(selector) or self.find_by_email(selector)
+
+    def find_contacts_by_group(self, group: str):
+        self.ensure_groups_storage()
+        normalized_group = self.ensure_group_exists(group)
+        results = [record for record in self.iter_records() if normalized_group in record.groups]
+        return RecordList(results)
 
     def ensure_primary_phone_unique(self, phone: str, owner_record_id: str | None = None):
         self.ensure_phone_unique(phone, owner_record_id)
@@ -195,6 +325,7 @@ class AddressBook(UserDict):
         raise ValueError("Phone number must be unique.")
 
     def replace_primary_phone(self, record_id: str, new_phone: str):
+        self.ensure_groups_storage()
         record = self.data.get(str(record_id).strip())
         if record is None:
             raise ValueError("Contact ID not found.")
@@ -205,15 +336,69 @@ class AddressBook(UserDict):
             return
         record.phones[0] = Phone(normalized_new)
 
+    def add_contact_to_group(self, record_id: str, group: str):
+        self.ensure_groups_storage()
+        record = self.find_by_id(record_id)
+        if record is None:
+            raise ValueError(f"Contact ID {record_id} not found.")
+        normalized_group = self.ensure_group_exists(group)
+        if normalized_group in record.groups:
+            raise ValueError(f"Contact already belongs to group '{normalized_group}'.")
+        record.add_group(normalized_group)
+
+    def add_contacts_to_group(self, group: str, record_ids: list[str]):
+        self.ensure_groups_storage()
+        normalized_group = self.ensure_group_exists(group)
+
+        added = []
+        skipped = []
+
+        for record_id in record_ids:
+            record = self.find_by_id(record_id)
+
+            if record is None:
+                skipped.append(f"{record_id} (not found)")
+                continue
+
+            if normalized_group in record.groups:
+                skipped.append(f"{record_id} (already in group)")
+                continue
+
+            record.add_group(normalized_group)
+            added.append(record_id)
+
+        return {"group": normalized_group, "added": added, "skipped": skipped}
+
+    def delete_contact_group(self, record_id: str, group: str):
+        self.ensure_groups_storage()
+        record = self.find_by_id(record_id)
+        if record is None:
+            raise ValueError(f"Contact ID {record_id} not found.")
+        normalized_group = self.normalize_group_name(group)
+        record.remove_group(normalized_group)
+
+    def delete_contact_groups(self, record_id: str):
+        self.ensure_groups_storage()
+        record = self.find_by_id(record_id)
+        if record is None:
+            raise ValueError(f"Contact ID {record_id} not found.")
+        record.clear_groups()
+
     def search(self, query: str):
+        self.ensure_groups_storage()
         q = query.strip().lower()
         results = []
         for r in self.iter_records():
-            if q in r.name.value.lower() or (r.email and q in r.email.value.lower()) or any(q in p.value.lower() for p in r.phones):
+            if (
+                q in r.name.value.lower()
+                or (r.email and q in r.email.value.lower())
+                or any(q in p.value.lower() for p in r.phones)
+            ):
                 results.append(r)
         return RecordList(results)
 
     def delete(self, record_id: str):
+        self.ensure_groups_storage()
         rid = str(record_id).strip()
         if rid in self.data:
             del self.data[rid]
@@ -227,6 +412,7 @@ class AddressBook(UserDict):
         Adjusts birthdays falling on weekends to Monday.
         Sorted by upcoming date (soonest first).
         """
+        self.ensure_groups_storage()
         today = datetime.today().date()
         upcoming = []
 
@@ -234,17 +420,14 @@ class AddressBook(UserDict):
             if record.birthday is None:
                 continue
 
-            # Birthday in current year
             bday_this_year = record.birthday.value.replace(year=today.year)
 
-            # If birthday already passed, consider next year
             if bday_this_year < today:
                 bday_this_year = bday_this_year.replace(year=today.year + 1)
 
             days_until_bday = (bday_this_year - today).days
 
             if 0 <= days_until_bday <= days_ahead:
-                # Adjust for weekend
                 congr_date = bday_this_year
                 if congr_date.weekday() == 5:  # Saturday
                     congr_date += timedelta(days=2)
@@ -253,13 +436,20 @@ class AddressBook(UserDict):
 
                 upcoming.append((record, congr_date))
 
-        # Sort by upcoming date
         upcoming.sort(key=lambda x: x[1])
-
-        return upcoming  
+        return upcoming
 
     def to_colored_dict(self, text_color=AnsiColor.BRIGHT_CYAN, border_color=AnsiColor.BRIGHT_WHITE):
+        self.ensure_groups_storage()
         return [r.to_colored_dict(text_color, border_color) for r in self.data.values()]
 
     def to_table(self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN):
-        return AnsiColor.wrap(tabulate(self.to_colored_dict(text_color, border_color), headers="keys", tablefmt="fancy_grid"), border_color)
+        self.ensure_groups_storage()
+        return AnsiColor.wrap(
+            tabulate(
+                self.to_colored_dict(text_color, border_color),
+                headers="keys",
+                tablefmt="fancy_grid"
+            ),
+            border_color
+        )

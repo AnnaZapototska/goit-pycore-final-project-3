@@ -4,10 +4,12 @@ from bot import (
     add_contact_command,
     change_command,
     edit_command,
+    edit_phone_command,
     change_email_command,
     delete_contact_command,
     close_command,
     phone_command,
+    show_phone_command,
     add_birthday_command,
     search_command,
     show_birthday_command,
@@ -18,6 +20,17 @@ from bot import (
     remove_address_command,
     all_command,
     hello_command,
+
+    # contact groups
+    add_group_command,
+    all_groups_command,
+    delete_group_command,
+    add_contact_group_command,
+    add_contacts_to_group_command,
+    delete_contact_group_command,
+    delete_contact_groups_command,
+    show_contact_groups_command,
+    search_contacts_by_group_command,
 
     # notes
     add_note_command,
@@ -135,10 +148,12 @@ COMMANDS = {
     # contacts
     "add": add_contact_command,
     "edit": edit_command,
+    "edit-phone": edit_phone_command,
     "change": change_command,
     "change-email": change_email_command,
     "delete": delete_contact_command,
     "phone": phone_command,
+    "show-phone": show_phone_command,
     "add-address": add_address_command,
     "edit-address": edit_address_command,
     "show-address": show_address_command,
@@ -146,6 +161,17 @@ COMMANDS = {
     "add-birthday": add_birthday_command,
     "show-birthday": show_birthday_command,
     "birthdays": birthdays_command,
+
+    # groups
+    "add-group": add_group_command,
+    "all-groups": all_groups_command,
+    "delete-group": delete_group_command,
+    "add-contact-group": add_contact_group_command,
+    "add-contacts-to-group": add_contacts_to_group_command,
+    "delete-contact-group": delete_contact_group_command,
+    "delete-contact-groups": delete_contact_groups_command,
+    "show-contact-groups": show_contact_groups_command,
+    "search-contacts-by-group": search_contacts_by_group_command,
 
     # notes
     "add_note": add_note_command,
