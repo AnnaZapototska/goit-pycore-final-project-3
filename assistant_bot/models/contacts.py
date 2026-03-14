@@ -283,10 +283,12 @@ class AddressBook(UserDict):
             raise ValueError("Contact ID not found.")
 
 
-
     def get_upcoming_birthdays(self, days_ahead=7):
         """
-        Returns a list of contacts whose birthday is within the next `days_ahead` days.
+        Returns a list of tuples (record, birthday_date) for contacts whose
+        birthday is within the next `days_ahead` days.
+        Adjusts birthdays falling on weekends to Monday.
+        Sorted by upcoming date (soonest first).
         """
         today = datetime.today().date()
         upcoming = []
@@ -295,10 +297,10 @@ class AddressBook(UserDict):
             if record.birthday is None:
                 continue
 
-            # Birthday in the current year
+            # Birthday in current year
             bday_this_year = record.birthday.value.replace(year=today.year)
 
-            # If birthday already passed this year, consider next year
+            # If birthday already passed, consider next year
             if bday_this_year < today:
                 bday_this_year = bday_this_year.replace(year=today.year + 1)
 
@@ -312,10 +314,12 @@ class AddressBook(UserDict):
                 elif congr_date.weekday() == 6:  # Sunday
                     congr_date += timedelta(days=1)
 
-                upcoming.append((congr_date, record))
+                upcoming.append((record, congr_date))
 
-        upcoming.sort(key=lambda x: x[0])
-        return [f"{rec.name.value} -> {date.strftime('%d.%m.%Y')}" for date, rec in upcoming]
+        # Sort by upcoming date
+        upcoming.sort(key=lambda x: x[1])
+
+        return upcoming  
     
     
     def to_colored_dict(self, text_color=AnsiColor.BRIGHT_CYAN, border_color=AnsiColor.BRIGHT_WHITE):
