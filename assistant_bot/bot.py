@@ -147,7 +147,7 @@ def edit_command(args, book: AddressBook):
 
 # PHONE
 @input_error
-@require_args(1, "phone <phone_or_email>")
+@require_args(1, "contact <id>")
 def phone_command(args, book: AddressBook):
     selector = args[0]
     record = resolve_record(selector, book, require_id_only=False)

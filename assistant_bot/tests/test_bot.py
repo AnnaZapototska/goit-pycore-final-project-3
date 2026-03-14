@@ -80,6 +80,10 @@ def test_help_command_contains_grouped_tables(empty_book):
     assert "Add a new contact" in result
     assert "Create a new note" in result
     assert "Add a tag to a note" in result
+    assert "all-contacts" in result
+    assert "add-contact" in result
+    assert "add-note" in result
+    assert "add-note-tag" in result
 
 # -------------------------
 # TEST ADD CONTACT
