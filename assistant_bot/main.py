@@ -42,8 +42,7 @@ from storage import (
     save_data_notes,
 )
 
-from utils.colors import print_colored, input_colored
-from tabulate import tabulate
+from utils.colors import print_colored, input_colored, print_as_table
 import shutil
 
 
@@ -51,13 +50,14 @@ def main():
     book = load_data_contacts()
     notes_book = load_data_notes()
 
-    print_colored("Welcome to the assistant bot!")
+    print_as_table("Welcome to the assistant bot!")
 
     while True:
         try:
             user_input = input_colored("assistant> ")
         except KeyboardInterrupt:
-            print_colored("\nGood bye!")
+            print() # new line after Ctrl+C
+            print_as_table("Good bye!")
             break
 
         command, args = parse_input(user_input)
@@ -113,9 +113,7 @@ def main():
             print(result)
         else:
             terminal_width = shutil.get_terminal_size((80, 20)).columns
-            print_colored(
-                tabulate([[result]], tablefmt="grid", maxcolwidths=[terminal_width - 10])
-            )
+            print_as_table(result)
 
         save_data_contacts(book)
         save_data_notes(notes_book)

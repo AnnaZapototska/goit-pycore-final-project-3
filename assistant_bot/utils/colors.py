@@ -1,4 +1,6 @@
 from enum import Enum
+import shutil
+from tabulate import tabulate
 
 class AnsiColor(str, Enum):
     """ANSI escape codes for terminal coloring (no external deps)."""
@@ -40,3 +42,8 @@ def print_colored(text: str, color = AnsiColor.BRIGHT_CYAN):
 def input_colored(prompt: str, color = AnsiColor.BRIGHT_CYAN) -> str:
     """Get user input with a colored prompt."""
     return input(AnsiColor.wrap(prompt, color) + AnsiColor.BRIGHT_BLUE)
+
+def print_as_table(text: str):
+    """Print text formatted as a table (for better readability)."""
+    terminal_width = shutil.get_terminal_size((80, 20)).columns
+    print(AnsiColor.wrap(tabulate([[text]], tablefmt="grid", maxcolwidths=[terminal_width - 10]), AnsiColor.BRIGHT_CYAN))
