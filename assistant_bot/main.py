@@ -3,10 +3,12 @@ from bot import (
     add_contact_command,
     change_command,
     edit_command,
+    edit_phone_command,
     change_email_command,
     delete_contact_command,
     close_command,
     phone_command,
+    show_phone_command,
     add_birthday_command,
     search_command,
     show_birthday_command,
@@ -18,6 +20,18 @@ from bot import (
     all_command,
     hello_command,
     help_command,
+
+    # contact groups
+    add_group_command,
+    all_groups_command,
+    delete_group_command,
+    add_contact_group_command,
+    add_contacts_to_group_command,
+    delete_contact_group_command,
+    delete_contact_groups_command,
+    show_contact_groups_command,
+    search_contacts_by_group_command,
+
     help_global_command,
     help_contacts_command,
     help_notes_command,
@@ -150,6 +164,15 @@ COMMANDS = {
     "add-birthday": add_birthday_command,
     "show-birthday": show_birthday_command,
     "all-birthdays": birthdays_command,
+
+    # groups
+    "add-contact-group": add_contact_group_command,
+    "add-contacts-to-group": add_contacts_to_group_command,
+    "delete-contact-group": delete_contact_group_command,
+    "delete-contact-groups": delete_contact_groups_command,
+    "show-contact-groups": show_contact_groups_command,
+    "search-contacts-by-group": search_contacts_by_group_command,
+
     # notes
     "add-note": add_note_command,
     "all-notes": show_notes_command,

@@ -20,6 +20,7 @@ class Record:
         self.email = None
         self.birthday = None
         self.address = None
+        self.groups = set() 
 
     @property
     def primary_phone(self):
@@ -109,6 +110,7 @@ class Record:
             f"email: {email_value}, "
             f"birthday: {birthday_value}, "
             f"address: {address_value}"
+            f"groups: {self.get_groups_display()}"
         )
 
     def to_colored_dict(
@@ -121,6 +123,7 @@ class Record:
         return {
             "id": table_cell_colored_value(self.id, text_color, border_color),
             "name": table_cell_colored_value(self.name.value, text_color, border_color),
+            "groups": table_cell_colored_value(self.get_groups_display(), text_color, border_color),
             "phones": "\n".join(
                 [
                     table_cell_colored_value(p.value, text_color, border_color)
@@ -160,6 +163,43 @@ class Record:
             ),
             border_color,
         )
+    
+    def ensure_groups_initialized(self):
+        if not hasattr(self, "groups") or self.groups is None:
+            self.groups = set()
+        elif not isinstance(self.groups, set):
+            self.groups = set(self.groups)
+
+    def add_group(self, group: str):
+        self.ensure_groups_initialized()
+        normalized_group = str(group).strip().lower()
+        if not normalized_group:
+            raise ValueError("Group name cannot be empty.")
+        self.groups.add(normalized_group)
+
+    def remove_group(self, group: str):
+        self.ensure_groups_initialized()
+        normalized_group = str(group).strip().lower()
+        if normalized_group not in self.groups:
+            raise ValueError(f"Contact is not in group '{normalized_group}'.")
+        self.groups.remove(normalized_group)
+
+    def clear_groups(self):
+        self.ensure_groups_initialized()
+        self.groups.clear()
+
+    def has_group(self, group: str):
+        self.ensure_groups_initialized()
+        normalized_group = str(group).strip().lower()
+        return normalized_group in self.groups
+
+    def get_groups_list(self):
+        self.ensure_groups_initialized()
+        return sorted(self.groups)
+
+    def get_groups_display(self):
+        self.ensure_groups_initialized()
+        return ", ".join(self.get_groups_list()) if self.groups else "no groups"
 
 
 
@@ -188,6 +228,110 @@ class RecordList(UserList):
 
 
 class AddressBook(UserDict):
+    DEFAULT_GROUPS = {"family", "work", "friends"}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ensure_groups_storage()
+
+    def ensure_groups_storage(self):
+        if not hasattr(self, "available_groups") or self.available_groups is None:
+            self.available_groups = set(self.DEFAULT_GROUPS)
+        elif not isinstance(self.available_groups, set):
+            self.available_groups = set(self.available_groups)
+
+        if not self.available_groups:
+            self.available_groups = set(self.DEFAULT_GROUPS)
+
+        for record in self.data.values():
+            if hasattr(record, "ensure_groups_initialized"):
+                record.ensure_groups_initialized()
+            elif not hasattr(record, "groups") or record.groups is None:
+                record.groups = set()
+
+    def normalize_group_name(self, group: str):
+        normalized_group = str(group).strip().lower()
+        if not normalized_group:
+            raise ValueError("Group name cannot be empty.")
+        return normalized_group
+
+    def add_group(self, group: str):
+        self.ensure_groups_storage()
+        normalized_group = self.normalize_group_name(group)
+        if normalized_group in self.available_groups:
+            raise ValueError(f"Group '{normalized_group}' already exists.")
+        self.available_groups.add(normalized_group)
+
+    def get_all_groups(self):
+        self.ensure_groups_storage()
+        return sorted(self.available_groups)
+
+    def ensure_group_exists(self, group: str):
+        self.ensure_groups_storage()
+        normalized_group = self.normalize_group_name(group)
+        if normalized_group not in self.available_groups:
+            raise ValueError(f"Group '{normalized_group}' does not exist.")
+        return normalized_group
+
+    def delete_group(self, group: str):
+        self.ensure_groups_storage()
+        normalized_group = self.ensure_group_exists(group)
+        self.available_groups.remove(normalized_group)
+
+        for record in self.iter_records():
+            record.ensure_groups_initialized()
+            if normalized_group in record.groups:
+                record.groups.remove(normalized_group)
+
+    def add_contact_to_group(self, record_id: str, group: str):
+        self.ensure_groups_storage()
+        record = self.find_by_id(record_id)
+        if record is None:
+            raise ValueError(f"Contact ID {record_id} not found.")
+        normalized_group = self.ensure_group_exists(group)
+        if normalized_group in record.groups:
+            raise ValueError(f"Contact already belongs to group '{normalized_group}'.")
+        record.add_group(normalized_group)
+
+    def add_contacts_to_group(self, group: str, record_ids: list[str]):
+        self.ensure_groups_storage()
+        normalized_group = self.ensure_group_exists(group)
+        added, skipped = [], []
+
+        for record_id in record_ids:
+            record = self.find_by_id(record_id)
+            if record is None:
+                skipped.append(f"{record_id} (not found)")
+                continue
+            if normalized_group in record.groups:
+                skipped.append(f"{record_id} (already in group)")
+                continue
+            record.add_group(normalized_group)
+            added.append(record_id)
+
+        return {"group": normalized_group, "added": added, "skipped": skipped}
+
+    def delete_contact_group(self, record_id: str, group: str):
+        self.ensure_groups_storage()
+        record = self.find_by_id(record_id)
+        if record is None:
+            raise ValueError(f"Contact ID {record_id} not found.")
+        normalized_group = self.normalize_group_name(group)
+        record.remove_group(normalized_group)
+
+    def delete_contact_groups(self, record_id: str):
+        self.ensure_groups_storage()
+        record = self.find_by_id(record_id)
+        if record is None:
+            raise ValueError(f"Contact ID {record_id} not found.")
+        record.clear_groups()
+
+    def find_contacts_by_group(self, group: str):
+        self.ensure_groups_storage()
+        normalized_group = self.ensure_group_exists(group)
+        results = [record for record in self.iter_records() if normalized_group in record.groups]
+        return RecordList(results)
+
     def add_record(self, record: Record):
         for phone_obj in record.phones:
             self.ensure_phone_unique(phone_obj.value)
