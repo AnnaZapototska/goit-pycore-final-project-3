@@ -27,18 +27,15 @@ from assistant_bot.commands.contacts_cmd import (
     show_phone_command,
     change_email_command,
     phone_command,
-
     # bithday
     add_birthday_command,
     show_birthday_command,
     birthdays_command,
-
     # address
     add_address_command,
     edit_address_command,
     show_address_command,
     remove_address_command,
-
     # groups
     add_group_command,
     all_groups_command,
@@ -173,7 +170,6 @@ COMMANDS: Dict[str, CommandHandler] = {
     "help-groups": help_groups_command,
     "exit": close_command,
     "close": close_command,
-
     # contacts
     "all-contacts": all_command,
     "search-contact": search_command,
@@ -182,7 +178,6 @@ COMMANDS: Dict[str, CommandHandler] = {
     "edit-phone": edit_phone_command,
     "edit-email": change_email_command,
     "show-phone": show_phone_command,
-    "edit-email": change_email_command,
     "delete-contact": delete_contact_command,
     "show-primary-phone": phone_command,
     "add-address": add_address_command,
@@ -192,9 +187,8 @@ COMMANDS: Dict[str, CommandHandler] = {
     "add-birthday": add_birthday_command,
     "show-birthday": show_birthday_command,
     "all-birthdays": birthdays_command,
-
     # groups
-    "all-groups": all_groups_command, 
+    "all-groups": all_groups_command,
     "add-group": add_group_command,
     "add-contact-group": add_contact_group_command,
     "add-contacts-to-group": add_contacts_to_group_command,
@@ -203,14 +197,12 @@ COMMANDS: Dict[str, CommandHandler] = {
     "delete-contact-groups": delete_contact_groups_command,
     "show-contact-groups": show_contact_groups_command,
     "search-contacts-by-group": search_contacts_by_group_command,
-
     # notes
     "add-note": add_note_command,
     "all-notes": show_notes_command,
     "edit-note": edit_note_command,
     "delete-note": delete_note_command,
     "search-notes": search_notes_command,
-
     # tags
     "add-note-tag": add_tag_command,
     "remove-note-tag": remove_tag_command,
