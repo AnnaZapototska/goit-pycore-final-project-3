@@ -208,6 +208,18 @@ Then you can import the package
 
 import assistant_bot
 
+
+🚀 Install from TestPyPI
+
+The package is published to TestPyPI, it can be installed with:
+
+python -m pip install -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple drevo
+
+Run CLI:
+
+drevo
+
+
 ---
 
 # 🧰 Development
