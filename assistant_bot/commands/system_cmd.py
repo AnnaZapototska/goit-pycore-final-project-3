@@ -58,3 +58,8 @@ def help_notes_command(args, book: AddressBook):
 @require_args(0, "help-tags")
 def help_tags_command(args, book: AddressBook):
     return build_help_message("tags")
+
+@input_error
+@require_args(0, "help-groups")
+def help_groups_command(args, book: AddressBook):
+    return build_help_message("groups")

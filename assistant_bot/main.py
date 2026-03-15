@@ -9,6 +9,7 @@ from assistant_bot.commands.system_cmd import (
     invalid_command,
     help_global_command,
     help_contacts_command,
+    help_groups_command,
     help_notes_command,
     help_tags_command,
 )
@@ -157,6 +158,7 @@ COMMANDS = {
     "help-contacts": help_contacts_command,
     "help-notes": help_notes_command,
     "help-tags": help_tags_command,
+    "help-groups": help_groups_command,
     "all-contacts": all_command,
     "search-contact": search_command,
     "exit": close_command,
