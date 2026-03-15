@@ -48,7 +48,7 @@ cd project-drevo-team
 
 Run assistant
 
-python assistant_bot/main.py
+python -m assistant_bot.main
 
 ---
 
@@ -64,7 +64,7 @@ pip install -r requirements.txt
 
 Run the assistant from project root
 
-python assistant_bot/main.py
+python -m assistant_bot.main
 
 You will see CLI prompt
 
@@ -191,22 +191,25 @@ Build package
 
 python -m build
 
-Artifacts appear in
+Create and activate a virtual environment
 
-dist/
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
 
-Example files
+Install dependencies
 
-assistant_bot-0.1.0.tar.gz  
-assistant_bot-0.1.0-py3-none-any.whl
+pip install -r requirements.txt
 
-Install locally
+Install your package in editable mode
 
-pip install dist/*.whl
+pip install -e .
 
-Then you can import the package
+Run your package
 
-import assistant_bot
+python3 -m assistant_bot.main 
 
 
 🚀 Install from TestPyPI
