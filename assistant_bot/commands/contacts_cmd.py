@@ -26,7 +26,7 @@ def all_command(args, book: AddressBook):
 def search_command(args, book: AddressBook):
     """Searches for contacts matching the query in name, phone, or email."""
     query = args[0]
-    
+
     service = ContactService(book)
     results = service.search(query)
 
@@ -35,7 +35,10 @@ def search_command(args, book: AddressBook):
 
     return results.to_table()
 
+
 # --- ADD CONTACT ---
+
+
 @input_error
 def add_contact_command(args, book: AddressBook):
     """Adds a new contact with the provided name, phone, and optional email."""
@@ -130,7 +133,7 @@ def phone_command(args, book: AddressBook):
 @require_args(1, "show-phone <id_or_phone_or_email>")
 def show_phone_command(args, book: AddressBook):
     """Shows all phone numbers for a contact."""
-    
+
     selector = args[0]
     record = resolve_record(selector, book, require_id_only=False)
     return f"{record.name.value}'s phone numbers: {record.get_phones_display()}"
@@ -148,9 +151,13 @@ def delete_contact_command(args, book: AddressBook):
     service = ContactService(book)
 
     while True:
-        confirm = input(
-            f"Are you sure you want to delete contact '{record.name.value}' [ID: {record.id}]? (Y/N): "
-        ).strip().lower()
+        confirm = (
+            input(
+                f"Are you sure you want to delete contact '{record.name.value}' [ID: {record.id}]? (Y/N): "
+            )
+            .strip()
+            .lower()
+        )
 
         if confirm in ("y", "yes"):
             service.delete_contact(record_id)
@@ -262,7 +269,6 @@ def show_birthday_command(args, book: AddressBook):
     """Shows the contact's birthday."""
     selector = args[0]
     record = resolve_record(selector, book, require_id_only=False)
-    service = ContactService(book)
 
     if not record.birthday:
         return "Birthday is not set for this contact."
@@ -295,7 +301,10 @@ def birthdays_command(args, book: AddressBook):
         text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
     )
 
+
 # --- GROUPS ---
+
+
 @input_error
 @require_args(1, "add-group <group>")
 def add_group_command(args, book: AddressBook):
@@ -329,9 +338,13 @@ def delete_group_command(args, book: AddressBook):
     service = ContactService(book)
 
     while True:
-        confirm = input(
-            f"Are you sure you want to delete group '{normalized_group}' from the system and all contacts? (Y/N): "
-        ).strip().lower()
+        confirm = (
+            input(
+                f"Are you sure you want to delete group '{normalized_group}' from the system and all contacts? (Y/N): "
+            )
+            .strip()
+            .lower()
+        )
 
         if confirm in ("y", "yes"):
             normalized_group = service.delete_group(group)

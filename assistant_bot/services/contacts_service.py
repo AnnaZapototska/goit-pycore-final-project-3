@@ -22,7 +22,7 @@ class ContactService:
 
         self.book.add_record(record)
         return record
-    
+
     def search(self, query: str):
         """Searches for contacts matching the query in name, phone, or email."""
         return self.book.search(query)
@@ -30,7 +30,6 @@ class ContactService:
     def change_primary_phone(self, record_id: str, new_phone: str):
         """Changes the primary phone number for a contact."""
         self.book.replace_primary_phone(record_id, new_phone)
-
 
     def change_email(self, record, new_email: str):
         """Edits the contact's email."""
@@ -42,14 +41,12 @@ class ContactService:
         else:
             record.edit_email(validated_email.value)
 
-
     def edit_phone(self, record, old_phone: str, new_phone: str):
         """Edits a specific phone number for a contact."""
         validated_new_phone = Phone(new_phone)
         self.book.ensure_phone_unique(validated_new_phone.value, owner_record_id=record.id)
 
         record.edit_phone(old_phone, validated_new_phone.value)
-
 
     def delete_contact(self, record_id: str):
         """Deletes a contact by its ID."""
@@ -81,20 +78,17 @@ class ContactService:
         self.book.add_group(normalized_group)
         return normalized_group
 
-
     def delete_group(self, group: str):
         """Deletes a group and removes all contacts from it."""
         normalized_group = self.book.normalize_group_name(group)
         self.book.delete_group(normalized_group)
         return normalized_group
 
-
     def add_contact_to_group(self, record_id: str, group: str):
         """Adds a contact to a group."""
         normalized_group = self.book.normalize_group_name(group)
         self.book.add_contact_to_group(record_id, normalized_group)
         return normalized_group
-
 
     def add_contacts_to_group(self, group: str, record_ids):
         """Adds multiple contacts to a group."""
@@ -125,7 +119,7 @@ class ContactService:
         """
         normalized_group = self.book.normalize_group_name(group)
         return self.book.find_contacts_by_group(normalized_group)
-    
+
     # --- BIRTHDAY ---
 
     def add_birthday(self, record, birthday: str):

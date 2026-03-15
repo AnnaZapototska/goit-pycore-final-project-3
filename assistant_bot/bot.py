@@ -32,9 +32,7 @@ def apply_contact_edit(record, field, new_value, book: AddressBook):
 
     if normalized_field == "email":
         validated_email = Email(new_value)
-        book.ensure_email_unique(
-            validated_email.value, owner_record_id=record.id
-        )
+        book.ensure_email_unique(validated_email.value, owner_record_id=record.id)
 
         if record.email is None:
             record.add_email(validated_email.value)
@@ -59,8 +57,7 @@ def apply_contact_edit(record, field, new_value, book: AddressBook):
         "Unsupported field. Use name, add-phone, email, address, or birthday."
     )
 
-
-# --- notes commands ---
+    # --- notes commands ---
 
     """
     Edits a note by its ID. Prompts user to update title and text.
@@ -86,8 +83,6 @@ def apply_contact_edit(record, field, new_value, book: AddressBook):
 
     notes_book.edit_note_by_id(note_id, final_text, final_title)
     return f"Note [ID: {note_id}] updated successfully."
-
-
 
     """
     Deletes a note by its ID after confirmation.
@@ -115,7 +110,3 @@ def apply_contact_edit(record, field, new_value, book: AddressBook):
 
     notes_book.delete_note_by_id(note_id)
     return f"Note '{note_to_delete.title or 'Untitled'}' deleted successfully."
-
-
-
-

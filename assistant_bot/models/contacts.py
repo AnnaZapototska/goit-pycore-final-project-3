@@ -20,7 +20,7 @@ class Record:
         self.email = None
         self.birthday = None
         self.address = None
-        self.groups = set() 
+        self.groups = set()
 
     @property
     def primary_phone(self):
@@ -163,7 +163,7 @@ class Record:
             ),
             border_color,
         )
-    
+
     def ensure_groups_initialized(self):
         if not hasattr(self, "groups") or self.groups is None:
             self.groups = set()
@@ -200,7 +200,6 @@ class Record:
     def get_groups_display(self):
         self.ensure_groups_initialized()
         return ", ".join(self.get_groups_list()) if self.groups else "no groups"
-
 
 
 class RecordList(UserList):
@@ -452,8 +451,7 @@ class AddressBook(UserDict):
         # Sort by upcoming date
         upcoming.sort(key=lambda x: x[1])
 
-        return upcoming  
-
+        return upcoming
 
     def to_colored_dict(
         self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
