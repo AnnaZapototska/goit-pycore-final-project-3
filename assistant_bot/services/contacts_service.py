@@ -1,5 +1,5 @@
-from models.contacts import AddressBook, Record
-from models.fields import Phone, Email
+from assistant_bot.models.contacts import AddressBook, Record
+from assistant_bot.models.fields import Phone, Email
 
 
 class ContactService:

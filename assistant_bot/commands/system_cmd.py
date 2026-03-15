@@ -1,6 +1,6 @@
-from utils.decorators import input_error, require_args
-from models.contacts import AddressBook       
-from utils.help_view import build_help_message
+from assistant_bot.utils.decorators import input_error, require_args
+from assistant_bot.models.contacts import AddressBook       
+from assistant_bot.utils.help_view import build_help_message
 
 
 @input_error

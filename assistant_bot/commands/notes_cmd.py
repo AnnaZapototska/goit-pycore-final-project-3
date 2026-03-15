@@ -1,6 +1,6 @@
-from utils.decorators import input_error, require_args
-from models.notes import NotesBook, NotesList
-from services.notes_service import NoteService
+from assistant_bot.utils.decorators import input_error, require_args
+from assistant_bot.models.notes import NotesBook, NotesList
+from assistant_bot.services.notes_service import NoteService
 
 
 def add_note_command(args, notes_book: NotesBook):

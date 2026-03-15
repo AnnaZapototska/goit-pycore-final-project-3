@@ -1,5 +1,5 @@
 from tabulate import tabulate
-from utils.colors import AnsiColor, table_cell_colored_value
+from assistant_bot.utils.colors import AnsiColor, table_cell_colored_value
 
 GREEN_FILL = AnsiColor.GREEN.value
 GREEN_SHADOW = AnsiColor.BRIGHT_BLACK.value

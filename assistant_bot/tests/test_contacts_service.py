@@ -7,9 +7,9 @@ import pytest
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, PROJECT_ROOT)
 
-from models.contacts import AddressBook
-from services.contacts_service import ContactService
-import commands.contacts_cmd as contacts_cmd
+from assistant_bot.models.contacts import AddressBook
+from assistant_bot.services.contacts_service import ContactService
+import assistant_bot.commands.contacts_cmd as contacts_cmd
 
 # --------------------------
 # Fixtures

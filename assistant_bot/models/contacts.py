@@ -1,8 +1,8 @@
 from collections import UserDict, UserList
 from datetime import datetime, timedelta
 from tabulate import tabulate
-from .fields import Name, Phone, Email, Address, Birthday
-from utils.colors import AnsiColor, table_cell_colored_value
+from assistant_bot.models.fields import Name, Phone, Email, Address, Birthday
+from assistant_bot.utils.colors import AnsiColor, table_cell_colored_value
 
 
 class Record:
