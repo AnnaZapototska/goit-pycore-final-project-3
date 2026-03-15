@@ -141,7 +141,7 @@ def show_phone_command(args, book: AddressBook):
 
 # --- DELETE CONTACT ---
 @input_error
-@require_args(1, "delete <id>")
+@require_args(1, "delete-contact <id>")
 def delete_contact_command(args, book: AddressBook):
     """Deletes a contact by its ID after confirmation."""
 
@@ -303,7 +303,6 @@ def birthdays_command(args, book: AddressBook):
 
 
 # --- GROUPS ---
-
 
 @input_error
 @require_args(1, "add-group <group>")
