@@ -1,27 +1,42 @@
 from utils.helper import parse_input, get_command_suggestions, ask_confirmation
-from bot import (
-    add_contact_command,
+from utils.colors import print_colored, input_colored, print_as_table
+from utils.help_view import build_welcome_message
+
+from commands.system_cmd import (
+    hello_command,
+    help_command,
+    close_command,
+    invalid_command,
+    help_global_command,
+    help_contacts_command,
+    help_notes_command,
+    help_tags_command,
+)
+
+from commands.contacts_cmd import (
+    all_command,
+    search_command,
+    add_contact_command,   
+    delete_contact_command,     
     change_command,
     edit_command,
     edit_phone_command,
-    change_email_command,
-    delete_contact_command,
-    close_command,
-    phone_command,
     show_phone_command,
+    change_email_command,
+    phone_command,
+
+    #bithday
     add_birthday_command,
-    search_command,
     show_birthday_command,
     birthdays_command,
+
+    #address
     add_address_command,
     edit_address_command,
     show_address_command,
     remove_address_command,
-    all_command,
-    hello_command,
-    help_command,
 
-    # contact groups
+    #groups
     add_group_command,
     all_groups_command,
     delete_group_command,
@@ -30,12 +45,10 @@ from bot import (
     delete_contact_group_command,
     delete_contact_groups_command,
     show_contact_groups_command,
-    search_contacts_by_group_command,
+    search_contacts_by_group_command,            
+ )   
 
-    help_global_command,
-    help_contacts_command,
-    help_notes_command,
-    help_tags_command,
+from commands.notes_cmd import (
     # notes
     add_note_command,
     show_notes_command,
@@ -49,16 +62,14 @@ from bot import (
     search_tag_command,
     sort_notes_by_tags_command,
     all_tags_command,
-)
+)    
+
 from storage import (
     load_data_contacts,
     save_data_contacts,
     load_data_notes,
     save_data_notes,
 )
-
-from utils.colors import print_colored, input_colored, print_as_table
-from utils.help_view import build_welcome_message
 
 
 def main():
