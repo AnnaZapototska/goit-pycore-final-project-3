@@ -1,92 +1,269 @@
-# goit-pycore-final-project-3
-final-project-group-3
+# 🌳 DREVO CLI Assistant
 
-## Development tools (flake8 / autopep8 / pytest)
+<p align="center">
+  <b>Command Line Assistant for managing contacts, notes, groups and reminders</b>
+</p>
 
-All commands below should be run from the repository root.
+<p align="center">
 
-### Install dependencies
+![Python](https://img.shields.io/badge/python-3.10+-blue)
+![CLI](https://img.shields.io/badge/interface-CLI-orange)
+![Package](https://img.shields.io/badge/python-package-ready-green)
+![Build](https://img.shields.io/badge/build-working-brightgreen)
+![Course](https://img.shields.io/badge/course-GoIT%20Python%20Core-purple)
 
-- Create/activate your virtual environment (recommended), then install:
-    - `python -m pip install -r requirements.txt`
+</p>
 
-### Lint with flake8
+---
 
-- Lint the main package and tests:
-    - `python -m flake8 assistant_bot`
-- Optional: show a summary:
-    - `python -m flake8 assistant_bot --count --statistics`
+## 🌳 About the Project
 
-### Format with autopep8
+**DREVO CLI Assistant** is a command-line tool designed to help users manage personal information directly from the terminal.
 
-- Preview changes (no files modified):
-    - `python -m autopep8 --diff --recursive assistant_bot`
-- Apply formatting in-place:
-    - `python -m autopep8 --in-place --recursive assistant_bot`
+The assistant allows users to store and organize:
 
-### Run tests with pytest
+- contacts
+- phone numbers
+- emails
+- birthdays
+- addresses
+- groups of contacts
+- notes
+- tags for notes
 
-- Run all tests:
-    - `python -m pytest`
-- Run tests with a quieter output:
-    - `python -m pytest -q`
-- Run a single test file:
-    - `python -m pytest assistant_bot/tests/test_bot.py`
-- Run tests with verbose mode and with full output:
-    - `python -m pytest -vv`
-
-Internal information of the python project structure (we will change this file, just to have for use):
-
-# structure 
-```
-assistant_bot/
-│
-├── main.py
-├── bot.py
-├── storage.py
-│
-├── models/
-│   ├── contacts.py
-│   ├── notes.py
-│   └── fields.py
-│
-└── utils/
-    ├── validators.py
-    └── decorators.py
-```
+The project was created as the **final project for the GoIT Python Core course**.
 
 
+---
 
-# Address functionality
+# ⚡ Quick Start
 
-The assistant bot allows managing contact addresses.
+Clone repository
 
-Available address commands:
+git clone https://github.com/AnnaZapototska/project-drevo-team.git
 
-add-address <name>  
-Adds an address to an existing contact.  
-The bot will ask for:
-- street
-- city
-- country
+Enter project directory
 
-Example:
-add-address John
+cd project-drevo-team
 
-edit-address <name>  
-Updates the existing address of a contact.
+Run assistant
 
-Example:
-edit-address John
+python assistant_bot/main.py
 
-show-address <name>  
-Displays the saved address for a contact.
+---
 
-Example:
-show-address John
+# 📦 Installation
 
-remove-address <name>  
-Removes the address from a contact.
+Install dependencies
 
-Example:
-remove-address John
+pip install -r requirements.txt
+
+---
+
+# ▶ Running the Assistant
+
+Run the assistant from project root
+
+python assistant_bot/main.py
+
+You will see CLI prompt
+
+assistant>
+
+Example usage
+
+assistant> add-contact John  
+assistant> add-phone John 123456789  
+assistant> add-email John john@email.com  
+assistant> all-contacts
+
+---
+
+# 🧾 Command Cheat Sheet
+
+## Global Commands
+
+hello — greet the assistant  
+help — show help  
+exit / close — exit assistant
+
+---
+
+## Contact Management
+
+add-contact — create new contact  
+edit-contact — edit contact  
+delete-contact — remove contact  
+show-primary-phone — show main phone  
+search-contact — search contacts  
+all-contacts — list all contacts
+
+---
+
+## Address Management
+
+add-address — add address  
+edit-address — edit address  
+show-address — show address  
+delete-address — remove address
+
+---
+
+## Birthdays
+
+add-birthday — add birthday  
+show-birthday — show birthday  
+all-birthdays — upcoming birthdays
+
+---
+
+## Contact Groups
+
+add-contact-group — create group  
+add-contacts-to-group — add contacts  
+delete-contact-group — delete group  
+show-contact-groups — show groups  
+search-contacts-by-group — search contacts
+
+---
+
+## Notes
+
+add-note — create note  
+edit-note — edit note  
+delete-note — delete note  
+search-notes — search notes  
+all-notes — show notes
+
+---
+
+## Note Tags
+
+add-note-tag — add tag  
+remove-note-tag — remove tag  
+show-notes-tags — show tags  
+search-notes-by-tag — search notes  
+sort-notes-by-tags — sort notes  
+all-notes-tags — show tags
+
+---
+
+# 🏗 Architecture
+
+Project structure
+
+assistant_bot
+
+├── main.py        CLI entry point  
+├── bot.py         command handlers  
+├── storage.py     data persistence  
+
+├── commands       CLI commands  
+├── models         data models  
+├── services       business logic  
+├── utils          helper utilities  
+
+└── tests          project tests
+
+Architecture flow
+
+User (CLI)  
+↓  
+main.py  
+↓  
+Command Handlers (bot.py)  
+↓  
+Services Layer  
+↓  
+Storage Layer
+
+---
+
+# 📦 Packaging
+
+The project can be built as a Python package.
+
+Install build tools
+
+pip install build
+
+Build package
+
+python -m build
+
+Artifacts appear in
+
+dist/
+
+Example files
+
+assistant_bot-0.1.0.tar.gz  
+assistant_bot-0.1.0-py3-none-any.whl
+
+Install locally
+
+pip install dist/*.whl
+
+Then you can import the package
+
+import assistant_bot
+
+---
+
+# 🧰 Development
+
+Development tools used
+
+flake8 — code style checking  
+autopep8 — automatic formatting  
+pytest — testing
+
+Run linter
+
+flake8
+
+Run formatter
+
+autopep8 --in-place --recursive .
+
+Run tests
+
+pytest
+
+---
+
+# 🌳 Why the Name DREVO
+
+**DREVO** means **tree** in Ukrainian.
+
+Just like a tree has branches, the assistant organizes user data into structured categories:
+
+- contacts
+- groups
+- notes
+- tags
+
+This structure helps keep information organized and easy to navigate.
+
+---
+
+# 👥 Contributors
+
+This project was developed by
+
+Anna Zapototska  
+Bohdan Shcherbak  
+Roman Zhrun  
+Yuliia Herasymiuk
+
+---
+
+# 🎓 Educational Project
+
+DREVO CLI Assistant was created as part of the **GoIT Python Core course**.
+
+---
+
+# ⭐ Support
+
+If you like this project consider giving it a ⭐ on GitHub
