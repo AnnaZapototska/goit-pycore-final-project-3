@@ -53,6 +53,7 @@ COMMAND_GROUPS = [
             ("edit-email", "Change the contact email", "edit-email <id> new@mail.com"),
             ("delete-contact", "Delete a contact", "delete-contact <id>"),
             ("show-primary-phone", "Show the primary phone", "show-primary-phone <id>"),
+            ("show-phone", "Show all phones of a contact", "show-phone <id>"),
             ("add-address", "Add an address", "add-address <id>"),
             ("edit-address", "Update the address", "edit-address <id>"),
             ("show-address", "Show the address", "show-address <id>"),
@@ -65,6 +66,9 @@ COMMAND_GROUPS = [
     (
         "Groups",
         [
+            ("all-groups", "Show all groups", "all-groups"),
+            ("delete-group", "Delete a group", "delete-group <group_name>"),
+            ("add-group", "Add a group", "add-group <group_name>"),
             ("add-contact-group", "Add a contact to a group", "add-contact-group <contact_id> <group_name>"),
             ("add-contacts-to-group", "Add multiple contacts to a group", "add-contacts-to-group <group_name> <contact_id1> <contact_id2>"),
             ("delete-contact-group", "Delete a contact group", "delete-contact-group <group_name>"),

@@ -142,8 +142,8 @@ def show_phone_command(args: List[str], book: AddressBook) -> str:
 
 # --- DELETE CONTACT ---
 @input_error
-@require_args(1, "delete <id>")
-def delete_contact_command(args: List[str], book: AddressBook) -> str:
+@require_args(1, "delete-contact <id>")
+def delete_contact_command(args, book: AddressBook):
     """Deletes a contact by its ID after confirmation."""
 
     record_id = args[0]
