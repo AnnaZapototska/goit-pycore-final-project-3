@@ -1,72 +1,9 @@
-from models.contacts import AddressBook, Record
-from models.notes import NotesBook, NotesList
-from models.fields import Email, Phone, Address
 from utils.decorators import input_error, require_args
-from utils.colors import AnsiColor
-from utils.help_view import build_help_message
+from models.notes import NotesBook, NotesList
 
-
-def resolve_record(selector, book: AddressBook, require_id_only=False):
-    """Resolve contact by ID only or by selector (ID | phone | email)."""
-    selector = str(selector).strip()
-
-    if require_id_only:
-        record = book.find_by_id(selector)
-        if not record:
-            raise ValueError(f"Contact ID {selector} not found")
-    else:
-        record = book.find_by_selector(selector)
-        if not record:
-            raise ValueError("Contact not found")
-    return record
-
-
-def apply_contact_edit(record, field, new_value, book: AddressBook):
-    normalized_field = field.strip().lower()
-
-    if normalized_field == "name":
-        record.set_name(new_value)
-        return "Name updated."
-
-    if normalized_field == "add-phone":
-        validated_phone = Phone(new_value)
-        book.ensure_phone_unique(validated_phone.value, owner_record_id=record.id)
-        record.add_phone(validated_phone.value)
-        return "Phone added."
-
-    if normalized_field == "email":
-        validated_email = Email(new_value)
-        book.ensure_email_unique(
-            validated_email.value, owner_phone=record.primary_phone.value
-        )
-
-        if record.email is None:
-            record.add_email(validated_email.value)
-        else:
-            record.edit_email(validated_email.value)
-
-        return "Email updated."
-
-    if normalized_field == "address":
-        validated_address = Address(new_value)
-        if record.address is None:
-            record.add_address(validated_address.value)
-        else:
-            record.edit_address(validated_address.value)
-        return "Address updated."
-
-    if normalized_field == "birthday":
-        record.add_birthday(new_value)
-        return "Birthday updated."
-
-    raise ValueError(
-        "Unsupported field. Use name, add-phone, email, address, or birthday."
-    )
-
-# --- notes commands ---
 
 @input_error
-@require_args(0, "add_note")
+@require_args(0, "add-note")
 def add_note_command(args, notes_book: NotesBook):
     """
     Adds a note to NotesBook.
@@ -94,7 +31,7 @@ def add_note_command(args, notes_book: NotesBook):
 
 
 @input_error
-@require_args(0, "show_notes")
+@require_args(0, "all-notes")
 def show_notes_command(args, notes_book: NotesBook):
     """
     Shows all notes with their IDs, titles, and text.
@@ -106,7 +43,7 @@ def show_notes_command(args, notes_book: NotesBook):
 
 
 @input_error
-@require_args(1, "edit_note <id>")
+@require_args(1, "edit-note <id>")
 def edit_note_command(args, notes_book: NotesBook):
     """
     Edits a note by its ID. Prompts user to update title and text.
@@ -135,7 +72,7 @@ def edit_note_command(args, notes_book: NotesBook):
 
 
 @input_error
-@require_args(1, "delete_note <id>")
+@require_args(1, "delete-note <id>")
 def delete_note_command(args, notes_book: NotesBook):
     """
     Deletes a note by its ID after confirmation.
@@ -166,7 +103,7 @@ def delete_note_command(args, notes_book: NotesBook):
 
 
 @input_error
-@require_args(1, "search_notes <keyword>")
+@require_args(1, "search-notes <keyword>")
 def search_notes_command(args, notes_book: NotesBook):
     """
     Searches notes by ID, title, or text (partial matches allowed).
@@ -183,7 +120,7 @@ def search_notes_command(args, notes_book: NotesBook):
 
 
 @input_error
-@require_args(2, "add-tag <note_id> <tag>")
+@require_args(2, "add-note-tag <note_id> <tag>")
 def add_tag_command(args, notes_book: NotesBook):
     """
     Adds a tag to a note by its ID.
@@ -195,7 +132,7 @@ def add_tag_command(args, notes_book: NotesBook):
 
 
 @input_error
-@require_args(2, "remove-tag <note_id> <tag>")
+@require_args(2, "remove-note-tag <note_id> <tag>")
 def remove_tag_command(args, notes_book: NotesBook):
     """
     Removes a tag from a note by its ID.
@@ -207,7 +144,7 @@ def remove_tag_command(args, notes_book: NotesBook):
 
 
 @input_error
-@require_args(1, "show-tags <note_id>")
+@require_args(1, "show-notes-tags <note_id>")
 def show_tags_command(args, notes_book: NotesBook):
     """
     Shows all tags for a specific note.
@@ -223,7 +160,7 @@ def show_tags_command(args, notes_book: NotesBook):
 
 
 @input_error
-@require_args(1, "search-tag <tag>")
+@require_args(1, "search-notes-by-tag <tag>")
 def search_tag_command(args, notes_book: NotesBook):
     """
     Searches notes by tag.
@@ -254,7 +191,7 @@ def sort_notes_by_tags_command(args, notes_book: NotesBook):
 
 
 @input_error
-@require_args(0, "all-tags")
+@require_args(0, "all-notes-tags")
 def all_tags_command(args, notes_book: NotesBook):
     """
     Shows all unique tags from all notes.
