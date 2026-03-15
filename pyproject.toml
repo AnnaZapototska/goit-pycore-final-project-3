@@ -20,6 +20,3 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["assistant_bot*"]
-
-[project.scripts]
-assistant-bot = "assistant_bot.main:main"
