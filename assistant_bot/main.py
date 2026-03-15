@@ -32,6 +32,10 @@ from bot import (
     show_contact_groups_command,
     search_contacts_by_group_command,
 
+    help_global_command,
+    help_contacts_command,
+    help_notes_command,
+    help_tags_command,
     # notes
     add_note_command,
     show_notes_command,
@@ -138,6 +142,10 @@ COMMANDS = {
     # global
     "hello": hello_command,
     "help": help_command,
+    "help-global": help_global_command,
+    "help-contacts": help_contacts_command,
+    "help-notes": help_notes_command,
+    "help-tags": help_tags_command,
     "all-contacts": all_command,
     "search-contact": search_command,
     "exit": close_command,
