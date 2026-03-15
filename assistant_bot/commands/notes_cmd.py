@@ -1,14 +1,15 @@
 from assistant_bot.utils.decorators import input_error, require_args
 from assistant_bot.models.notes import NotesBook, NotesList
 from assistant_bot.services.notes_service import NoteService
+from typing import List, Optional, Set
 
 
-def add_note_command(args, notes_book: NotesBook):
+def add_note_command(args: List[str], notes_book: NotesBook) -> str:
     """
     Adds a note to NotesBook.
     If user provides no arguments, interactively ask for title and text.
     """
-    tags = None
+    tags: Optional[str] = None
     service = NoteService(notes_book)
 
     if not args:
@@ -33,7 +34,7 @@ def add_note_command(args, notes_book: NotesBook):
 
 @input_error
 @require_args(0, "all-notes")
-def show_notes_command(args, notes_book: NotesBook):
+def show_notes_command(args: List[str], notes_book: NotesBook) -> str:
     """
     Shows all notes.
     """
@@ -48,7 +49,7 @@ def show_notes_command(args, notes_book: NotesBook):
 
 @input_error
 @require_args(1, "edit-note <id>")
-def edit_note_command(args, notes_book: NotesBook):
+def edit_note_command(args: List[str], notes_book: NotesBook) -> str:
     """
     Edits a note by its ID.
     """
@@ -77,7 +78,7 @@ def edit_note_command(args, notes_book: NotesBook):
 
 @input_error
 @require_args(1, "delete-note <id>")
-def delete_note_command(args, notes_book: NotesBook):
+def delete_note_command(args: List[str], notes_book: NotesBook) -> str:
     """
     Deletes a note by its ID after confirmation.
     """
@@ -104,7 +105,7 @@ def delete_note_command(args, notes_book: NotesBook):
 
 @input_error
 @require_args(1, "search-notes <keyword>")
-def search_notes_command(args, notes_book: NotesBook):
+def search_notes_command(args: List[str], notes_book: NotesBook) -> str:
     """
     Searches notes by keyword.
     """
@@ -122,7 +123,7 @@ def search_notes_command(args, notes_book: NotesBook):
 
 @input_error
 @require_args(2, "add-note-tag <note_id> <tag>")
-def add_tag_command(args, notes_book: NotesBook):
+def add_tag_command(args: List[str], notes_book: NotesBook) -> str:
     """
     Adds a tag to a note by its ID.
     """
@@ -134,7 +135,7 @@ def add_tag_command(args, notes_book: NotesBook):
 
 @input_error
 @require_args(2, "remove-note-tag <note_id> <tag>")
-def remove_tag_command(args, notes_book: NotesBook):
+def remove_tag_command(args: List[str], notes_book: NotesBook) -> str:
     """
     Removes a tag from a note.
     """
@@ -148,7 +149,7 @@ def remove_tag_command(args, notes_book: NotesBook):
 
 @input_error
 @require_args(1, "show-notes-tags <note_id>")
-def show_tags_command(args, notes_book: NotesBook):
+def show_tags_command(args: List[str], notes_book: NotesBook) -> str:
     """
     Shows all tags for a specific note.
     """
@@ -156,7 +157,7 @@ def show_tags_command(args, notes_book: NotesBook):
     service = NoteService(notes_book)
 
     note = service.get_note(note_id)
-    tags = getattr(note, "tags", set())
+    tags: Set[str] = getattr(note, "tags", set())
 
     if not tags:
         return f"Note [ID: {note_id}] has no tags."
@@ -166,7 +167,7 @@ def show_tags_command(args, notes_book: NotesBook):
 
 @input_error
 @require_args(1, "search-notes-by-tag <tag>")
-def search_tag_command(args, notes_book: NotesBook):
+def search_tag_command(args: List[str], notes_book: NotesBook) -> str:
     """
     Searches notes by tag.
     """
@@ -184,7 +185,7 @@ def search_tag_command(args, notes_book: NotesBook):
 
 @input_error
 @require_args(0, "sort-notes-by-tags")
-def sort_notes_by_tags_command(args, notes_book: NotesBook):
+def sort_notes_by_tags_command(args: List[str], notes_book: NotesBook) -> str:
     """
     Returns notes sorted by tags.
     """
@@ -201,7 +202,7 @@ def sort_notes_by_tags_command(args, notes_book: NotesBook):
 
 @input_error
 @require_args(0, "all-notes-tags")
-def all_tags_command(args, notes_book: NotesBook):
+def all_tags_command(args: List[str], notes_book: NotesBook) -> str:
     """
     Shows all unique tags.
     """

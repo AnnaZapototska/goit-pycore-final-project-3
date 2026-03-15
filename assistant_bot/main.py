@@ -1,4 +1,8 @@
-from assistant_bot.utils.helper import parse_input, get_command_suggestions, ask_confirmation
+from assistant_bot.utils.helper import (
+    parse_input,
+    get_command_suggestions,
+    ask_confirmation,
+)
 from assistant_bot.utils.colors import print_colored, input_colored, print_as_table
 from assistant_bot.utils.help_view import build_welcome_message
 
@@ -6,7 +10,6 @@ from assistant_bot.commands.system_cmd import (
     hello_command,
     help_command,
     close_command,
-    invalid_command,
     help_global_command,
     help_contacts_command,
     help_groups_command,
@@ -17,27 +20,23 @@ from assistant_bot.commands.system_cmd import (
 from assistant_bot.commands.contacts_cmd import (
     all_command,
     search_command,
-    add_contact_command,   
-    delete_contact_command,     
-    change_command,
+    add_contact_command,
+    delete_contact_command,
     edit_command,
     edit_phone_command,
     show_phone_command,
     change_email_command,
     phone_command,
-
-    #bithday
+    # bithday
     add_birthday_command,
     show_birthday_command,
     birthdays_command,
-
-    #address
+    # address
     add_address_command,
     edit_address_command,
     show_address_command,
     remove_address_command,
-
-    #groups
+    # groups
     add_group_command,
     all_groups_command,
     delete_group_command,
@@ -46,8 +45,8 @@ from assistant_bot.commands.contacts_cmd import (
     delete_contact_group_command,
     delete_contact_groups_command,
     show_contact_groups_command,
-    search_contacts_by_group_command,            
- )   
+    search_contacts_by_group_command,
+)
 
 from assistant_bot.commands.notes_cmd import (
     # notes
@@ -63,7 +62,7 @@ from assistant_bot.commands.notes_cmd import (
     search_tag_command,
     sort_notes_by_tags_command,
     all_tags_command,
-)    
+)
 
 from assistant_bot.storage import (
     load_data_contacts,
@@ -71,11 +70,17 @@ from assistant_bot.storage import (
     load_data_notes,
     save_data_notes,
 )
+from assistant_bot.models.contacts import AddressBook
+from assistant_bot.models.notes import NotesBook
+from typing import Any, Callable, Dict, List, Set
 
 
-def main():
-    book = load_data_contacts()
-    notes_book = load_data_notes()
+CommandHandler = Callable[[List[str], Any], str]
+
+
+def main() -> None:
+    book: AddressBook = load_data_contacts()
+    notes_book: NotesBook = load_data_notes()
 
     print_colored(build_welcome_message())
 
@@ -93,7 +98,7 @@ def main():
             print_colored("Please enter a command.")
             continue
 
-        command_action = COMMANDS.get(command)
+        command_action: CommandHandler | None = COMMANDS.get(command)
 
         if command_action is None:
             suggestions = get_command_suggestions(command, COMMANDS.keys(), limit=3)
@@ -119,7 +124,11 @@ def main():
                 print_colored("Invalid command.")
                 continue
 
-        notes_commands = {
+        if command_action is None:
+            print_colored("Invalid command.")
+            continue
+
+        notes_commands: Set[str] = {
             "add-note",
             "all-notes",
             "edit-note",
@@ -150,7 +159,7 @@ def main():
             break
 
 
-COMMANDS = {
+COMMANDS: Dict[str, CommandHandler] = {
     # global
     "hello": hello_command,
     "help": help_command,
@@ -159,15 +168,16 @@ COMMANDS = {
     "help-notes": help_notes_command,
     "help-tags": help_tags_command,
     "help-groups": help_groups_command,
-    "all-contacts": all_command,
-    "search-contact": search_command,
     "exit": close_command,
     "close": close_command,
     # contacts
+    "all-contacts": all_command,
+    "search-contact": search_command,
     "add-contact": add_contact_command,
     "edit-contact": edit_command,
-    "edit-phone": change_command,
+    "edit-phone": edit_phone_command,
     "edit-email": change_email_command,
+    "show-phone": show_phone_command,
     "delete-contact": delete_contact_command,
     "show-primary-phone": phone_command,
     "add-address": add_address_command,
@@ -177,15 +187,16 @@ COMMANDS = {
     "add-birthday": add_birthday_command,
     "show-birthday": show_birthday_command,
     "all-birthdays": birthdays_command,
-
     # groups
+    "all-groups": all_groups_command,
+    "add-group": add_group_command,
     "add-contact-group": add_contact_group_command,
     "add-contacts-to-group": add_contacts_to_group_command,
+    "delete-group": delete_group_command,
     "delete-contact-group": delete_contact_group_command,
     "delete-contact-groups": delete_contact_groups_command,
     "show-contact-groups": show_contact_groups_command,
     "search-contacts-by-group": search_contacts_by_group_command,
-
     # notes
     "add-note": add_note_command,
     "all-notes": show_notes_command,

@@ -1,4 +1,7 @@
 # tests/test_contacts_commands.py
+import assistant_bot.commands.notes_cmd as notes_cmd
+from assistant_bot.services.notes_service import NoteService
+from assistant_bot.models.notes import NotesBook
 import os
 import sys
 import pytest
@@ -7,13 +10,11 @@ import pytest
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, PROJECT_ROOT)
 
-from assistant_bot.models.notes import NotesBook
-from assistant_bot.services.notes_service import NoteService
-import assistant_bot.commands.notes_cmd as notes_cmd
 
 # --------------------------
 # Fixtures
 # --------------------------
+
 @pytest.fixture
 def empty_notes_book():
     notes_book = NotesBook()
@@ -146,7 +147,7 @@ def test_all_tags_command(empty_notes_book):
     notes_cmd.add_tag_command([note_id, "tagX"], notes_book)
 
     result = notes_cmd.all_tags_command([], notes_book)
-    assert "tagx" in result.lower()  
+    assert "tagx" in result.lower()
 
 
 def test_sort_notes_by_tags_command(empty_notes_book):

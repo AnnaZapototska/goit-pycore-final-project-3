@@ -7,13 +7,13 @@ CONTACTS_FILE = "addressbook.pkl"
 NOTES_FILE = "notes.pkl"
 
 
-def save_data_contacts(book, filename=CONTACTS_FILE):
+def save_data_contacts(book: AddressBook, filename: str = CONTACTS_FILE) -> None:
     """Save AddressBook to file."""
     with open(filename, "wb") as f:
         pickle.dump(book, f)
 
 
-def load_data_contacts(filename=CONTACTS_FILE):
+def load_data_contacts(filename: str = CONTACTS_FILE) -> AddressBook:
     """Load AddressBook from file."""
     try:
         with open(filename, "rb") as f:
@@ -25,13 +25,13 @@ def load_data_contacts(filename=CONTACTS_FILE):
         return AddressBook()
 
 
-def save_data_notes(notes_book, filename=NOTES_FILE):
+def save_data_notes(notes_book: NotesBook, filename: str = NOTES_FILE) -> None:
     """Save NotesBook to file."""
     with open(filename, "wb") as f:
         pickle.dump(notes_book, f)
 
 
-def load_data_notes(filename=NOTES_FILE):
+def load_data_notes(filename: str = NOTES_FILE) -> NotesBook:
     """Load NotesBook from file."""
     try:
         with open(filename, "rb") as f:

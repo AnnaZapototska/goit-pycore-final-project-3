@@ -1,8 +1,10 @@
-from assistant_bot.models.contacts import AddressBook
+from assistant_bot.models.contacts import AddressBook, Record
 from assistant_bot.models.fields import Email, Phone, Address
 
 
-def resolve_record(selector, book: AddressBook, require_id_only=False):
+def resolve_record(
+    selector: str, book: AddressBook, require_id_only: bool = False
+) -> Record:
     """Resolve contact by ID only or by selector (ID | phone | email)."""
     selector = str(selector).strip()
 
@@ -17,7 +19,9 @@ def resolve_record(selector, book: AddressBook, require_id_only=False):
     return record
 
 
-def apply_contact_edit(record, field, new_value, book: AddressBook):
+def apply_contact_edit(
+    record: Record, field: str, new_value: str, book: AddressBook
+) -> str:
     normalized_field = field.strip().lower()
 
     if normalized_field == "name":
@@ -32,9 +36,7 @@ def apply_contact_edit(record, field, new_value, book: AddressBook):
 
     if normalized_field == "email":
         validated_email = Email(new_value)
-        book.ensure_email_unique(
-            validated_email.value, owner_record_id=record.id
-        )
+        book.ensure_email_unique(validated_email.value, owner_record_id=record.id)
 
         if record.email is None:
             record.add_email(validated_email.value)
@@ -58,64 +60,3 @@ def apply_contact_edit(record, field, new_value, book: AddressBook):
     raise ValueError(
         "Unsupported field. Use name, add-phone, email, address, or birthday."
     )
-
-
-# --- notes commands ---
-
-    """
-    Edits a note by its ID. Prompts user to update title and text.
-    """
-    note_id = args[0]
-    note = notes_book.get_note_by_id(note_id)
-
-    if note is None:
-        raise ValueError(f"No note found with ID '{note_id}'.")
-
-    print(f"Editing Note [ID: {note.id}]")
-    print(f"Current Title: {note.title or 'Untitled'}")
-    print(f"Current Text: {note.text}")
-
-    new_title = input("New Title (leave empty to keep current): ").strip()
-    new_text = input("New Text (leave empty to keep current): ").strip()
-
-    final_title = new_title if new_title else note.title
-    final_text = new_text if new_text else note.text
-
-    if not final_text:
-        raise ValueError("Text cannot be empty.")
-
-    notes_book.edit_note_by_id(note_id, final_text, final_title)
-    return f"Note [ID: {note_id}] updated successfully."
-
-
-
-    """
-    Deletes a note by its ID after confirmation.
-    """
-    note_id = args[0]
-
-    note_to_delete = None
-    for note in notes_book.data.values():
-        if note.id == note_id:
-            note_to_delete = note
-            break
-
-    if not note_to_delete:
-        raise ValueError(f"No note found with ID '{note_id}'.")
-
-    confirm = (
-        input(
-            f"Are you sure you want to delete note '{note_to_delete.title or 'Untitled'}'? (Y/N): "
-        )
-        .strip()
-        .lower()
-    )
-    if confirm not in ("y", "yes"):
-        return "Delete canceled."
-
-    notes_book.delete_note_by_id(note_id)
-    return f"Note '{note_to_delete.title or 'Untitled'}' deleted successfully."
-
-
-
-

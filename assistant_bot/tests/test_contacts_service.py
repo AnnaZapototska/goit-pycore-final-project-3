@@ -1,4 +1,7 @@
 # tests/test_contacts_commands.py
+import assistant_bot.commands.contacts_cmd as contacts_cmd
+from assistant_bot.services.contacts_service import ContactService
+from assistant_bot.models.contacts import AddressBook
 import os
 import sys
 import pytest
@@ -7,13 +10,11 @@ import pytest
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, PROJECT_ROOT)
 
-from assistant_bot.models.contacts import AddressBook
-from assistant_bot.services.contacts_service import ContactService
-import assistant_bot.commands.contacts_cmd as contacts_cmd
 
 # --------------------------
 # Fixtures
 # --------------------------
+
 
 @pytest.fixture
 def empty_book():
