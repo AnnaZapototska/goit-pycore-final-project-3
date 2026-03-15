@@ -2,6 +2,7 @@ from collections import UserDict, UserList
 from datetime import datetime
 from assistant_bot.utils.colors import AnsiColor, table_cell_colored_value
 from tabulate import tabulate
+from typing import Dict, Iterator, List, Optional, Set
 
 
 class Note:
@@ -9,7 +10,13 @@ class Note:
 
     _id_counter = 1  # class-level counter
 
-    def __init__(self, text, title=None, note_id=None, tags=None):
+    def __init__(
+        self,
+        text: str,
+        title: Optional[str] = None,
+        note_id: Optional[str] = None,
+        tags: Optional[List[str] | str] = None,
+    ) -> None:
         if note_id is None:
             self.id = str(Note._id_counter)
             Note._id_counter += 1
@@ -23,28 +30,28 @@ class Note:
         if isinstance(tags, str):
             tags = [tags]
 
-        self.tags = {tag.strip().lower() for tag in (tags or []) if tag.strip()}
+        self.tags: Set[str] = {tag.strip().lower() for tag in (tags or []) if tag.strip()}
         self.created_at = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
 
-    def add_tag(self, tag):
+    def add_tag(self, tag: str) -> None:
         """Add a tag to the note."""
         cleaned_tag = tag.strip().lower()
         if not cleaned_tag:
             raise ValueError("Tag cannot be empty.")
         self.tags.add(cleaned_tag)
 
-    def remove_tag(self, tag):
+    def remove_tag(self, tag: str) -> None:
         """Remove a tag from the note."""
         cleaned_tag = tag.strip().lower()
         if cleaned_tag not in self.tags:
             raise ValueError(f"Tag '{cleaned_tag}' not found.")
         self.tags.remove(cleaned_tag)
 
-    def has_tag(self, tag):
+    def has_tag(self, tag: str) -> bool:
         """Check whether note contains the given tag."""
         return tag.strip().lower() in self.tags
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a nicely formatted string representation of the note."""
         tags_str = ", ".join(sorted(self.tags)) if self.tags else "No tags"
         return (
@@ -55,8 +62,10 @@ class Note:
         )
 
     def to_colored_dict(
-        self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
-    ):
+        self,
+        text_color: AnsiColor = AnsiColor.BRIGHT_GREEN,
+        border_color: AnsiColor = AnsiColor.BRIGHT_CYAN,
+    ) -> Dict[str, Optional[str]]:
         """Return the note formatted as a colored dictionary for table display."""
         tags_str = ", ".join(sorted(self.tags)) if self.tags else "No tags"
         return {
@@ -70,8 +79,10 @@ class Note:
         }
 
     def to_table(
-        self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
-    ):
+        self,
+        text_color: AnsiColor = AnsiColor.BRIGHT_GREEN,
+        border_color: AnsiColor = AnsiColor.BRIGHT_CYAN,
+    ) -> str:
         """Return the note formatted as a colored table."""
         return AnsiColor.wrap(
             tabulate(
@@ -85,8 +96,10 @@ class Note:
 
 class NotesList(UserList):
     def to_table(
-        self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
-    ):
+        self,
+        text_color: AnsiColor = AnsiColor.BRIGHT_GREEN,
+        border_color: AnsiColor = AnsiColor.BRIGHT_CYAN,
+    ) -> str:
         """Return a string representation of notes formatted as a colored table."""
         if not self.data:
             return AnsiColor.wrap("No notes found.", text_color)
@@ -104,7 +117,12 @@ class NotesList(UserList):
 class NotesBook(UserDict):
     """Manage multiple Note instances by their unique IDs."""
 
-    def add_note(self, text, title=None, tags=None):
+    def add_note(
+        self,
+        text: str,
+        title: Optional[str] = None,
+        tags: Optional[List[str] | str] = None,
+    ) -> str:
         """Add a new note with the given text, optional title, and optional tags."""
         if self.data:
             next_id = str(max(int(i) for i in self.data.keys()) + 1)
@@ -115,13 +133,15 @@ class NotesBook(UserDict):
         self.data[note.id] = note
         return note.id
 
-    def get_note_by_id(self, note_id):
+    def get_note_by_id(self, note_id: str) -> Note:
         note = self.data.get(note_id)
         if not note:
             raise ValueError(f"No note found with ID {note_id}")
         return note
 
-    def edit_note_by_id(self, note_id, new_text=None, new_title=None):
+    def edit_note_by_id(
+        self, note_id: str, new_text: Optional[str] = None, new_title: Optional[str] = None
+    ) -> None:
         """Find a note by ID and update its fields."""
         note = self.get_note_by_id(note_id)
 
@@ -131,12 +151,12 @@ class NotesBook(UserDict):
         if new_text:
             note.text = new_text
 
-    def delete_note_by_id(self, note_id):
+    def delete_note_by_id(self, note_id: str) -> None:
         """Delete a note using its ID."""
         self.get_note_by_id(note_id)
         del self.data[note_id]
 
-    def search_notes(self, keyword):
+    def search_notes(self, keyword: str) -> List[Note]:
         """Return a list of notes where the keyword appears in title, text, or ID."""
         keyword_lower = keyword.lower()
         results = [
@@ -148,32 +168,32 @@ class NotesBook(UserDict):
         ]
         return results
 
-    def search_notes_by_tag(self, tag):
+    def search_notes_by_tag(self, tag: str) -> List[Note]:
         """Return notes that contain the given tag."""
         cleaned_tag = tag.strip().lower()
         return [note for note in self.data.values() if cleaned_tag in note.tags]
 
-    def sort_notes_by_tags(self):
+    def sort_notes_by_tags(self) -> List[Note]:
         """Return notes sorted alphabetically by tags."""
         return sorted(
             self.data.values(),
             key=lambda note: sorted(note.tags)[0] if note.tags else "",
         )
 
-    def get_all_tags(self):
+    def get_all_tags(self) -> List[str]:
         """Return all unique tags sorted alphabetically."""
-        all_tags = set()
+        all_tags: Set[str] = set()
         for note in self.data.values():
             all_tags.update(note.tags)
         return sorted(all_tags)
 
-    def iter_notes(self):
+    def iter_notes(self) -> Iterator[Note]:
         for note in self.data.values():
             if not hasattr(note, "tags"):
                 note.tags = set()  # fix old notes
             yield note
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return all notes nicely formatted."""
         if not self.data:
             return "No notes found."
@@ -188,8 +208,10 @@ class NotesBook(UserDict):
         )
 
     def to_colored_dict(
-        self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
-    ):
+        self,
+        text_color: AnsiColor = AnsiColor.BRIGHT_GREEN,
+        border_color: AnsiColor = AnsiColor.BRIGHT_CYAN,
+    ) -> List[Dict[str, Optional[str]]]:
         """Return a list of notes formatted as colored dictionaries for table display."""
 
         return [
@@ -198,8 +220,10 @@ class NotesBook(UserDict):
         ]
 
     def to_table(
-        self, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
-    ):
+        self,
+        text_color: AnsiColor = AnsiColor.BRIGHT_GREEN,
+        border_color: AnsiColor = AnsiColor.BRIGHT_CYAN,
+    ) -> str:
         """Return a string representation of notes formatted as a colored table."""
         if not self.data:
             return AnsiColor.wrap("No notes found.", text_color)

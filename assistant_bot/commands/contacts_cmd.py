@@ -4,12 +4,13 @@ from assistant_bot.utils.decorators import input_error, require_args
 from assistant_bot.utils.colors import AnsiColor
 from assistant_bot.bot import resolve_record, apply_contact_edit
 from assistant_bot.services.contacts_service import ContactService
+from typing import List
 
 
 # SHOW ALL
 @input_error
 @require_args(0, "all")
-def all_command(args, book: AddressBook):
+def all_command(args: List[str], book: AddressBook) -> str:
     """Displays all contacts in a formatted table."""
 
     if not book or not book.data:
@@ -23,7 +24,7 @@ def all_command(args, book: AddressBook):
 # --- SEARCH CONTACT ---
 @input_error
 @require_args(1, "search <query>")
-def search_command(args, book: AddressBook):
+def search_command(args: List[str], book: AddressBook) -> str:
     """Searches for contacts matching the query in name, phone, or email."""
     query = args[0]
 
@@ -40,7 +41,7 @@ def search_command(args, book: AddressBook):
 
 
 @input_error
-def add_contact_command(args, book: AddressBook):
+def add_contact_command(args: List[str], book: AddressBook) -> str:
     """Adds a new contact with the provided name, phone, and optional email."""
 
     if len(args) not in (2, 3):
@@ -58,7 +59,7 @@ def add_contact_command(args, book: AddressBook):
 # --- CHANGE PRIMARY PHONE ---
 @input_error
 @require_args(2, "edit <id> <new_phone>")
-def change_command(args, book: AddressBook):
+def change_command(args: List[str], book: AddressBook) -> str:
     """Changes the primary phone number for a contact."""
 
     record_id, new_phone = args
@@ -71,7 +72,7 @@ def change_command(args, book: AddressBook):
 # --- CHANGE EMAIL ---
 @input_error
 @require_args(2, "edit-email <id> <new_email>")
-def change_email_command(args, book: AddressBook):
+def change_email_command(args: List[str], book: AddressBook) -> str:
     """Edits the contact's email."""
 
     record_id, new_email = args
@@ -86,7 +87,7 @@ def change_email_command(args, book: AddressBook):
 # --- EDIT PHONE ---
 @input_error
 @require_args(3, "edit-phone <id> <old_phone> <new_phone>")
-def edit_phone_command(args, book: AddressBook):
+def edit_phone_command(args: List[str], book: AddressBook) -> str:
     """Edits a specific phone number for a contact."""
 
     record_id, old_phone, new_phone = args
@@ -100,7 +101,7 @@ def edit_phone_command(args, book: AddressBook):
 
 # --- EDIT GENERIC ---
 @input_error
-def edit_command(args, book: AddressBook):
+def edit_command(args: List[str], book: AddressBook) -> str:
     """Edit contact."""
 
     if len(args) < 3:
@@ -120,7 +121,7 @@ def edit_command(args, book: AddressBook):
 # --- SHOW PRIMARY PHONE ---
 @input_error
 @require_args(1, "show-primary-phone <id_or_phone_or_email>")
-def phone_command(args, book: AddressBook):
+def phone_command(args: List[str], book: AddressBook) -> str:
     """Shows the primary phone number for a contact."""
 
     selector = args[0]
@@ -131,7 +132,7 @@ def phone_command(args, book: AddressBook):
 # --- SHOW ALL PHONES ---
 @input_error
 @require_args(1, "show-phone <id_or_phone_or_email>")
-def show_phone_command(args, book: AddressBook):
+def show_phone_command(args: List[str], book: AddressBook) -> str:
     """Shows all phone numbers for a contact."""
 
     selector = args[0]
@@ -142,7 +143,7 @@ def show_phone_command(args, book: AddressBook):
 # --- DELETE CONTACT ---
 @input_error
 @require_args(1, "delete <id>")
-def delete_contact_command(args, book: AddressBook):
+def delete_contact_command(args: List[str], book: AddressBook) -> str:
     """Deletes a contact by its ID after confirmation."""
 
     record_id = args[0]
@@ -170,7 +171,7 @@ def delete_contact_command(args, book: AddressBook):
 
 
 # --- ADDRESS HELPERS ---
-def build_address():
+def build_address() -> str:
     """Prompts the user to enter address details and constructs a full address string."""
 
     street = input("Enter street: ").strip()
@@ -193,7 +194,7 @@ def build_address():
 # --- ADD ADDRESS ---
 @input_error
 @require_args(1, "add-address <id>")
-def add_address_command(args, book: AddressBook):
+def add_address_command(args: List[str], book: AddressBook) -> str:
     """Adds an address to the contact."""
 
     selector = args[0]
@@ -207,7 +208,7 @@ def add_address_command(args, book: AddressBook):
 # --- EDIT ADDRESS ---
 @input_error
 @require_args(1, "edit-address <id>")
-def edit_address_command(args, book: AddressBook):
+def edit_address_command(args: List[str], book: AddressBook) -> str:
     """Edits the contact's address."""
 
     selector = args[0]
@@ -221,7 +222,7 @@ def edit_address_command(args, book: AddressBook):
 # --- SHOW ADDRESS ---
 @input_error
 @require_args(1, "show-address <id>")
-def show_address_command(args, book: AddressBook):
+def show_address_command(args: List[str], book: AddressBook) -> str:
     """Shows the contact's address."""
     selector = args[0]
     service = ContactService(book)
@@ -237,7 +238,7 @@ def show_address_command(args, book: AddressBook):
 # --- REMOVE ADDRESS ---
 @input_error
 @require_args(1, "remove-address <id>")
-def remove_address_command(args, book: AddressBook):
+def remove_address_command(args: List[str], book: AddressBook) -> str:
     """Removes the contact's address."""
     selector = args[0]
     service = ContactService(book)
@@ -254,7 +255,7 @@ def remove_address_command(args, book: AddressBook):
 # --- BIRTHDAY ---
 @input_error
 @require_args(2, "add-birthday <id> <DD.MM.YYYY>")
-def add_birthday_command(args, book: AddressBook):
+def add_birthday_command(args: List[str], book: AddressBook) -> str:
     """Adds a birthday to the contact."""
     selector, birthday = args
     record = resolve_record(selector, book, require_id_only=False)
@@ -265,7 +266,7 @@ def add_birthday_command(args, book: AddressBook):
 
 @input_error
 @require_args(1, "show-birthday <id>")
-def show_birthday_command(args, book: AddressBook):
+def show_birthday_command(args: List[str], book: AddressBook) -> str:
     """Shows the contact's birthday."""
     selector = args[0]
     record = resolve_record(selector, book, require_id_only=False)
@@ -278,7 +279,7 @@ def show_birthday_command(args, book: AddressBook):
 
 
 @input_error
-def birthdays_command(args, book: AddressBook):
+def birthdays_command(args: List[str], book: AddressBook) -> str:
     """Show upcoming birthdays within a specified number of days, sorted by date."""
     days_ahead = 7
 
@@ -307,7 +308,7 @@ def birthdays_command(args, book: AddressBook):
 
 @input_error
 @require_args(1, "add-group <group>")
-def add_group_command(args, book: AddressBook):
+def add_group_command(args: List[str], book: AddressBook) -> str:
     """Adds a new group to the system."""
     group = args[0]
 
@@ -319,7 +320,7 @@ def add_group_command(args, book: AddressBook):
 
 @input_error
 @require_args(0, "all-groups")
-def all_groups_command(args, book: AddressBook):
+def all_groups_command(args: List[str], book: AddressBook) -> str:
     """Shows all groups in the system."""
     groups = book.get_all_groups()
 
@@ -331,7 +332,7 @@ def all_groups_command(args, book: AddressBook):
 
 @input_error
 @require_args(1, "delete-group <group>")
-def delete_group_command(args, book: AddressBook):
+def delete_group_command(args: List[str], book: AddressBook) -> str:
     """Deletes a group and removes it from all contacts."""
     group = args[0]
     normalized_group = book.normalize_group_name(group)
@@ -358,7 +359,7 @@ def delete_group_command(args, book: AddressBook):
 
 @input_error
 @require_args(2, "add-contact-group <contact_id> <group>")
-def add_contact_group_command(args, book: AddressBook):
+def add_contact_group_command(args: List[str], book: AddressBook) -> str:
     """Add group to a contact."""
     record_id, group = args
     service = ContactService(book)
@@ -368,7 +369,7 @@ def add_contact_group_command(args, book: AddressBook):
 
 @input_error
 @require_args(1, "add-contacts-to-group <group> <contact_id_1> <contact_id_2> ...")
-def add_contacts_to_group_command(args, book: AddressBook):
+def add_contacts_to_group_command(args: List[str], book: AddressBook) -> str:
     """Adds multiple contacts to a group."""
 
     if not args:
@@ -395,7 +396,7 @@ def add_contacts_to_group_command(args, book: AddressBook):
 
 @input_error
 @require_args(2, "delete-contact-group <contact_id> <group>")
-def delete_contact_group_command(args, book: AddressBook):
+def delete_contact_group_command(args: List[str], book: AddressBook) -> str:
     """Removes a contact from a specific group."""
 
     record_id, group = args
@@ -406,7 +407,7 @@ def delete_contact_group_command(args, book: AddressBook):
 
 @input_error
 @require_args(1, "delete-contact-groups <contact_id>")
-def delete_contact_groups_command(args, book: AddressBook):
+def delete_contact_groups_command(args: List[str], book: AddressBook) -> str:
     """Removes all groups from a contact."""
 
     record_id = args[0]
@@ -421,7 +422,7 @@ def delete_contact_groups_command(args, book: AddressBook):
 
 @input_error
 @require_args(1, "show-contact-groups <contact_id>")
-def show_contact_groups_command(args, book: AddressBook):
+def show_contact_groups_command(args: List[str], book: AddressBook) -> str:
     """Shows all groups that a contact belongs to."""
 
     record_id = args[0]
@@ -435,7 +436,7 @@ def show_contact_groups_command(args, book: AddressBook):
 
 @input_error
 @require_args(1, "search-contacts-by-group <group>")
-def search_contacts_by_group_command(args, book: AddressBook):
+def search_contacts_by_group_command(args: List[str], book: AddressBook) -> str:
     """Searches for contacts that belong to a specific group."""
 
     group = args[0]

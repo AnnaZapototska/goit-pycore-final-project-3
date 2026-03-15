@@ -1,8 +1,10 @@
-from assistant_bot.models.contacts import AddressBook
+from assistant_bot.models.contacts import AddressBook, Record
 from assistant_bot.models.fields import Email, Phone, Address
 
 
-def resolve_record(selector, book: AddressBook, require_id_only=False):
+def resolve_record(
+    selector: str, book: AddressBook, require_id_only: bool = False
+) -> Record:
     """Resolve contact by ID only or by selector (ID | phone | email)."""
     selector = str(selector).strip()
 
@@ -17,7 +19,9 @@ def resolve_record(selector, book: AddressBook, require_id_only=False):
     return record
 
 
-def apply_contact_edit(record, field, new_value, book: AddressBook):
+def apply_contact_edit(
+    record: Record, field: str, new_value: str, book: AddressBook
+) -> str:
     normalized_field = field.strip().lower()
 
     if normalized_field == "name":

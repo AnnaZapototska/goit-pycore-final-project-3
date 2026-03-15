@@ -71,11 +71,17 @@ from assistant_bot.storage import (
     load_data_notes,
     save_data_notes,
 )
+from assistant_bot.models.contacts import AddressBook
+from assistant_bot.models.notes import NotesBook
+from typing import Any, Callable, Dict, List, Set
 
 
-def main():
-    book = load_data_contacts()
-    notes_book = load_data_notes()
+CommandHandler = Callable[[List[str], Any], str]
+
+
+def main() -> None:
+    book: AddressBook = load_data_contacts()
+    notes_book: NotesBook = load_data_notes()
 
     print_colored(build_welcome_message())
 
@@ -93,7 +99,7 @@ def main():
             print_colored("Please enter a command.")
             continue
 
-        command_action = COMMANDS.get(command)
+        command_action: CommandHandler | None = COMMANDS.get(command)
 
         if command_action is None:
             suggestions = get_command_suggestions(command, COMMANDS.keys(), limit=3)
@@ -119,7 +125,11 @@ def main():
                 print_colored("Invalid command.")
                 continue
 
-        notes_commands = {
+        if command_action is None:
+            print_colored("Invalid command.")
+            continue
+
+        notes_commands: Set[str] = {
             "add-note",
             "all-notes",
             "edit-note",
@@ -150,7 +160,7 @@ def main():
             break
 
 
-COMMANDS = {
+COMMANDS: Dict[str, CommandHandler] = {
     # global
     "hello": hello_command,
     "help": help_command,

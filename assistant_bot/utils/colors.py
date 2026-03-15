@@ -1,6 +1,7 @@
 from enum import Enum
 import shutil
 from tabulate import tabulate
+from typing import Any, Optional
 
 
 class AnsiColor(str, Enum):
@@ -37,17 +38,17 @@ class AnsiColor(str, Enum):
         return AnsiColor.RESET + color + text + AnsiColor.RESET
 
 
-def print_colored(text: str, color=AnsiColor.BRIGHT_CYAN):
+def print_colored(text: str, color: AnsiColor = AnsiColor.BRIGHT_CYAN) -> None:
     """Print text wrapped in the specified ANSI color."""
     print(AnsiColor.wrap(text, color))
 
 
-def input_colored(prompt: str, color=AnsiColor.BRIGHT_CYAN) -> str:
+def input_colored(prompt: str, color: AnsiColor = AnsiColor.BRIGHT_CYAN) -> str:
     """Get user input with a colored prompt."""
     return input(AnsiColor.wrap(prompt, color) + AnsiColor.BRIGHT_BLUE)
 
 
-def print_as_table(text: str):
+def print_as_table(text: str) -> None:
     """Print text formatted as a table (for better readability)."""
     terminal_width = shutil.get_terminal_size((80, 20)).columns
     print(
@@ -59,8 +60,10 @@ def print_as_table(text: str):
 
 
 def table_cell_colored_value(
-    value, text_color=AnsiColor.BRIGHT_GREEN, border_color=AnsiColor.BRIGHT_CYAN
-):
+    value: Any,
+    text_color: AnsiColor = AnsiColor.BRIGHT_GREEN,
+    border_color: AnsiColor = AnsiColor.BRIGHT_CYAN,
+) -> Optional[str]:
     if value is None:
         return None
     return (

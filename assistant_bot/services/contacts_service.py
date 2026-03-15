@@ -1,14 +1,16 @@
-from assistant_bot.models.contacts import AddressBook, Record
+from assistant_bot.models.contacts import AddressBook, Record, RecordList
 from assistant_bot.models.fields import Phone, Email
+from typing import Dict, List
+from datetime import date
 
 
 class ContactService:
-    def __init__(self, book: AddressBook):
+    def __init__(self, book: AddressBook) -> None:
         self.book = book
 
     # --- CONTACTS ---
 
-    def add_contact(self, name: str, phone: str, email=None):
+    def add_contact(self, name: str, phone: str, email: str | None = None) -> Record:
         """Adds a new contact with the provided name, phone, and optional email."""
         validated_phone = Phone(phone)
         self.book.ensure_phone_unique(validated_phone.value)
@@ -23,15 +25,15 @@ class ContactService:
         self.book.add_record(record)
         return record
 
-    def search(self, query: str):
+    def search(self, query: str) -> RecordList:
         """Searches for contacts matching the query in name, phone, or email."""
         return self.book.search(query)
 
-    def change_primary_phone(self, record_id: str, new_phone: str):
+    def change_primary_phone(self, record_id: str, new_phone: str) -> None:
         """Changes the primary phone number for a contact."""
         self.book.replace_primary_phone(record_id, new_phone)
 
-    def change_email(self, record, new_email: str):
+    def change_email(self, record: Record, new_email: str) -> None:
         """Edits the contact's email."""
         validated_email = Email(new_email)
         self.book.ensure_email_unique(validated_email.value, record.id)
@@ -41,79 +43,84 @@ class ContactService:
         else:
             record.edit_email(validated_email.value)
 
-    def edit_phone(self, record, old_phone: str, new_phone: str):
+    def edit_phone(self, record: Record, old_phone: str, new_phone: str) -> None:
         """Edits a specific phone number for a contact."""
         validated_new_phone = Phone(new_phone)
-        self.book.ensure_phone_unique(validated_new_phone.value, owner_record_id=record.id)
+        self.book.ensure_phone_unique(
+            validated_new_phone.value, owner_record_id=record.id
+        )
 
         record.edit_phone(old_phone, validated_new_phone.value)
 
-    def delete_contact(self, record_id: str):
+    def delete_contact(self, record_id: str) -> None:
         """Deletes a contact by its ID."""
         self.book.delete(record_id)
 
     # --- ADDRESS ---
 
-    def add_address(self, record, full_address: str):
+    def add_address(self, record: Record, full_address: str) -> None:
         """Adds an address to the contact."""
         record.add_address(full_address)
 
-    def edit_address(self, record, full_address: str):
+    def edit_address(self, record: Record, full_address: str) -> None:
         """Edits the contact's address."""
         record.edit_address(full_address)
 
-    def remove_address(self, record):
+    def remove_address(self, record: Record) -> None:
         """Removes the contact's address."""
         record.remove_address()
 
-    def get_address(self, record):
+    def get_address(self, record: Record) -> str:
         """Returns the contact's address or a message if not set."""
         return record.get_address()
 
     # --- GROUPS ---
 
-    def add_group(self, group: str):
+    def add_group(self, group: str) -> str:
         """Adds a new group."""
         normalized_group = self.book.normalize_group_name(group)
         self.book.add_group(normalized_group)
         return normalized_group
 
-    def delete_group(self, group: str):
+    def delete_group(self, group: str) -> str:
         """Deletes a group and removes all contacts from it."""
         normalized_group = self.book.normalize_group_name(group)
         self.book.delete_group(normalized_group)
         return normalized_group
 
-    def add_contact_to_group(self, record_id: str, group: str):
+    def add_contact_to_group(self, record_id: str, group: str) -> str:
         """Adds a contact to a group."""
         normalized_group = self.book.normalize_group_name(group)
         self.book.add_contact_to_group(record_id, normalized_group)
         return normalized_group
 
-    def add_contacts_to_group(self, group: str, record_ids):
+    def add_contacts_to_group(
+        self, group: str, record_ids: List[str]
+    ) -> Dict[str, List[str]]:
         """Adds multiple contacts to a group."""
         return self.book.add_contacts_to_group(group, record_ids)
 
-    def remove_contact_from_group(self, record_id: str, group: str):
+    def remove_contact_from_group(self, record_id: str, group: str) -> str:
         """Removes a contact from a group."""
         normalized_group = self.book.normalize_group_name(group)
         self.book.delete_contact_group(record_id, normalized_group)
         return normalized_group
+
     # --- GROUPS HELPERS ---
 
-    def clear_contact_groups(self, record):
+    def clear_contact_groups(self, record: Record) -> None:
         """
         Removes all groups from a contact.
         """
         record.clear_groups()
 
-    def get_contact_groups(self, record):
+    def get_contact_groups(self, record: Record) -> str:
         """
         Returns a list of groups a contact belongs to.
         """
         return record.get_groups_display()
 
-    def find_contacts_by_group(self, group: str):
+    def find_contacts_by_group(self, group: str) -> List[Record]:
         """
         Returns all contacts in the specified group.
         """
@@ -122,10 +129,10 @@ class ContactService:
 
     # --- BIRTHDAY ---
 
-    def add_birthday(self, record, birthday: str):
+    def add_birthday(self, record: Record, birthday: str) -> None:
         """Adds or updates the birthday for a contact."""
         record.add_birthday(birthday)
 
-    def get_upcoming_birthdays(self, days_ahead: int):
+    def get_upcoming_birthdays(self, days_ahead: int) -> List[tuple[Record, date]]:
         """Returns a list of contacts with birthdays in the next specified number of days."""
         return self.book.get_upcoming_birthdays(days_ahead=days_ahead)
