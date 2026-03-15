@@ -54,7 +54,7 @@ def add_contact_command(args, book: AddressBook):
 
 # --- CHANGE PRIMARY PHONE ---
 @input_error
-@require_args(2, "change <id> <new_phone>")
+@require_args(2, "edit <id> <new_phone>")
 def change_command(args, book: AddressBook):
     """Changes the primary phone number for a contact."""
 
@@ -67,7 +67,7 @@ def change_command(args, book: AddressBook):
 
 # --- CHANGE EMAIL ---
 @input_error
-@require_args(2, "change-email <id> <new_email>")
+@require_args(2, "edit-email <id> <new_email>")
 def change_email_command(args, book: AddressBook):
     """Edits the contact's email."""
 
