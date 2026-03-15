@@ -1,15 +1,15 @@
 from utils.decorators import input_error, require_args
 from models.notes import NotesBook, NotesList
+from services.notes_service import NoteService
 
 
-@input_error
-@require_args(0, "add-note")
 def add_note_command(args, notes_book: NotesBook):
     """
     Adds a note to NotesBook.
     If user provides no arguments, interactively ask for title and text.
     """
     tags = None
+    service = NoteService(notes_book)
 
     if not args:
         title = input("Title (press Enter to skip): ").strip()
@@ -26,7 +26,8 @@ def add_note_command(args, notes_book: NotesBook):
             if not text:
                 raise ValueError("Note text cannot be empty.")
 
-    note_id = notes_book.add_note(text=text, title=title, tags=tags)
+    note_id = service.add_note(text=text, title=title, tags=tags)
+
     return f"Note '{title or 'Untitled'}' added successfully with ID [{note_id[:8]}]."
 
 
@@ -34,25 +35,27 @@ def add_note_command(args, notes_book: NotesBook):
 @require_args(0, "all-notes")
 def show_notes_command(args, notes_book: NotesBook):
     """
-    Shows all notes with their IDs, titles, and text.
+    Shows all notes.
     """
-    if not notes_book:
+    service = NoteService(notes_book)
+    notes = service.get_all_notes()
+
+    if not notes or not notes.data:
         return "No notes found."
 
-    return notes_book.to_table()
+    return notes.to_table()
 
 
 @input_error
 @require_args(1, "edit-note <id>")
 def edit_note_command(args, notes_book: NotesBook):
     """
-    Edits a note by its ID. Prompts user to update title and text.
+    Edits a note by its ID.
     """
     note_id = args[0]
-    note = notes_book.get_note_by_id(note_id)
+    service = NoteService(notes_book)
 
-    if note is None:
-        raise ValueError(f"No note found with ID '{note_id}'.")
+    note = service.get_note(note_id)
 
     print(f"Editing Note [ID: {note.id}]")
     print(f"Current Title: {note.title or 'Untitled'}")
@@ -67,7 +70,8 @@ def edit_note_command(args, notes_book: NotesBook):
     if not final_text:
         raise ValueError("Text cannot be empty.")
 
-    notes_book.edit_note_by_id(note_id, final_text, final_title)
+    service.edit_note(note_id, final_text, final_title)
+
     return f"Note [ID: {note_id}] updated successfully."
 
 
@@ -78,39 +82,36 @@ def delete_note_command(args, notes_book: NotesBook):
     Deletes a note by its ID after confirmation.
     """
     note_id = args[0]
+    service = NoteService(notes_book)
 
-    note_to_delete = None
-    for note in notes_book.data.values():
-        if note.id == note_id:
-            note_to_delete = note
-            break
-
-    if not note_to_delete:
-        raise ValueError(f"No note found with ID '{note_id}'.")
+    note = service.get_note(note_id)
 
     confirm = (
         input(
-            f"Are you sure you want to delete note '{note_to_delete.title or 'Untitled'}'? (Y/N): "
+            f"Are you sure you want to delete note '{note.title or 'Untitled'}'? (Y/N): "
         )
         .strip()
         .lower()
     )
+
     if confirm not in ("y", "yes"):
         return "Delete canceled."
 
-    notes_book.delete_note_by_id(note_id)
-    return f"Note '{note_to_delete.title or 'Untitled'}' deleted successfully."
+    service.delete_note(note_id)
+
+    return f"Note '{note.title or 'Untitled'}' deleted successfully."
 
 
 @input_error
 @require_args(1, "search-notes <keyword>")
 def search_notes_command(args, notes_book: NotesBook):
     """
-    Searches notes by ID, title, or text (partial matches allowed).
+    Searches notes by keyword.
     """
     keyword = args[0].lower()
+    service = NoteService(notes_book)
 
-    results = notes_book.search_notes(keyword)
+    results = service.search_notes(keyword)
 
     if not results:
         return f"No notes found matching '{keyword}'."
@@ -125,9 +126,9 @@ def add_tag_command(args, notes_book: NotesBook):
     """
     Adds a tag to a note by its ID.
     """
-    note_id, tag = args[0], args[1]
-    note = notes_book.get_note_by_id(note_id)
-    note.add_tag(tag)
+    note_id, tag = args
+    service = NoteService(notes_book)
+    service.add_tag(note_id, tag)
     return f"Tag '{tag}' added to note [ID: {note_id}]."
 
 
@@ -135,11 +136,13 @@ def add_tag_command(args, notes_book: NotesBook):
 @require_args(2, "remove-note-tag <note_id> <tag>")
 def remove_tag_command(args, notes_book: NotesBook):
     """
-    Removes a tag from a note by its ID.
+    Removes a tag from a note.
     """
-    note_id, tag = args[0], args[1]
-    note = notes_book.get_note_by_id(note_id)
-    note.remove_tag(tag)
+    note_id, tag = args
+    service = NoteService(notes_book)
+
+    service.remove_tag(note_id, tag)
+
     return f"Tag '{tag}' removed from note [ID: {note_id}]."
 
 
@@ -150,7 +153,9 @@ def show_tags_command(args, notes_book: NotesBook):
     Shows all tags for a specific note.
     """
     note_id = args[0]
-    note = notes_book.get_note_by_id(note_id)
+    service = NoteService(notes_book)
+
+    note = service.get_note(note_id)
     tags = getattr(note, "tags", set())
 
     if not tags:
@@ -166,7 +171,9 @@ def search_tag_command(args, notes_book: NotesBook):
     Searches notes by tag.
     """
     tag = args[0]
-    results = notes_book.search_notes_by_tag(tag)
+    service = NoteService(notes_book)
+
+    results = service.search_notes_by_tag(tag)
 
     if not results:
         return f"No notes found with tag '{tag}'."
@@ -179,9 +186,11 @@ def search_tag_command(args, notes_book: NotesBook):
 @require_args(0, "sort-notes-by-tags")
 def sort_notes_by_tags_command(args, notes_book: NotesBook):
     """
-    Returns all notes sorted alphabetically by tags.
+    Returns notes sorted by tags.
     """
-    results = notes_book.sort_notes_by_tags()
+    service = NoteService(notes_book)
+
+    results = service.sort_by_tags()
 
     if not results:
         return "No notes found."
@@ -194,9 +203,11 @@ def sort_notes_by_tags_command(args, notes_book: NotesBook):
 @require_args(0, "all-notes-tags")
 def all_tags_command(args, notes_book: NotesBook):
     """
-    Shows all unique tags from all notes.
+    Shows all unique tags.
     """
-    tags = notes_book.get_all_tags()
+    service = NoteService(notes_book)
+
+    tags = service.get_all_tags()
 
     if not tags:
         return "No tags found."

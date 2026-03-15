@@ -42,7 +42,6 @@ def invalid_command(args, book):
 def help_global_command(args, book: AddressBook):
     return build_help_message("global")
 
-
 @input_error
 @require_args(0, "help-contacts")
 def help_contacts_command(args, book: AddressBook):
