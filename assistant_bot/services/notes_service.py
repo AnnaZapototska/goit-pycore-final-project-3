@@ -1,4 +1,4 @@
-from models.notes import NotesBook
+from assistant_bot.models.notes import NotesBook
 
 
 class NoteService:

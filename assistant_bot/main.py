@@ -1,8 +1,8 @@
-from utils.helper import parse_input, get_command_suggestions, ask_confirmation
-from utils.colors import print_colored, input_colored, print_as_table
-from utils.help_view import build_welcome_message
+from assistant_bot.utils.helper import parse_input, get_command_suggestions, ask_confirmation
+from assistant_bot.utils.colors import print_colored, input_colored, print_as_table
+from assistant_bot.utils.help_view import build_welcome_message
 
-from commands.system_cmd import (
+from assistant_bot.commands.system_cmd import (
     hello_command,
     help_command,
     close_command,
@@ -13,7 +13,7 @@ from commands.system_cmd import (
     help_tags_command,
 )
 
-from commands.contacts_cmd import (
+from assistant_bot.commands.contacts_cmd import (
     all_command,
     search_command,
     add_contact_command,   
@@ -48,7 +48,7 @@ from commands.contacts_cmd import (
     search_contacts_by_group_command,            
  )   
 
-from commands.notes_cmd import (
+from assistant_bot.commands.notes_cmd import (
     # notes
     add_note_command,
     show_notes_command,
@@ -64,7 +64,7 @@ from commands.notes_cmd import (
     all_tags_command,
 )    
 
-from storage import (
+from assistant_bot.storage import (
     load_data_contacts,
     save_data_contacts,
     load_data_notes,

@@ -1,5 +1,5 @@
-from models.contacts import AddressBook
-from models.fields import Email, Phone, Address
+from assistant_bot.models.contacts import AddressBook
+from assistant_bot.models.fields import Email, Phone, Address
 
 
 def resolve_record(selector, book: AddressBook, require_id_only=False):

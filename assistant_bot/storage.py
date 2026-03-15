@@ -1,6 +1,6 @@
 import pickle
-from models.contacts import AddressBook
-from models.notes import NotesBook
+from assistant_bot.models.contacts import AddressBook
+from assistant_bot.models.notes import NotesBook
 
 
 CONTACTS_FILE = "addressbook.pkl"

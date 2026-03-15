@@ -1,9 +1,9 @@
-from models.contacts import AddressBook
-from models.fields import Address
-from utils.decorators import input_error, require_args
-from utils.colors import AnsiColor
-from bot import resolve_record, apply_contact_edit
-from services.contacts_service import ContactService
+from assistant_bot.models.contacts import AddressBook
+from assistant_bot.models.fields import Address
+from assistant_bot.utils.decorators import input_error, require_args
+from assistant_bot.utils.colors import AnsiColor
+from assistant_bot.bot import resolve_record, apply_contact_edit
+from assistant_bot.services.contacts_service import ContactService
 
 
 # SHOW ALL

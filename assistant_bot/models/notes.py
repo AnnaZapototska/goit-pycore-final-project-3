@@ -1,6 +1,6 @@
 from collections import UserDict, UserList
 from datetime import datetime
-from utils.colors import AnsiColor, table_cell_colored_value
+from assistant_bot.utils.colors import AnsiColor, table_cell_colored_value
 from tabulate import tabulate
 
 

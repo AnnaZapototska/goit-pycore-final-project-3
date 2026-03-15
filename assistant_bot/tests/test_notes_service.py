@@ -7,9 +7,9 @@ import pytest
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, PROJECT_ROOT)
 
-from models.notes import NotesBook
-from services.notes_service import NoteService
-import commands.notes_cmd as notes_cmd
+from assistant_bot.models.notes import NotesBook
+from assistant_bot.services.notes_service import NoteService
+import assistant_bot.commands.notes_cmd as notes_cmd
 
 # --------------------------
 # Fixtures
