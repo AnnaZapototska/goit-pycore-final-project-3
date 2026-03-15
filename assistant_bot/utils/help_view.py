@@ -24,6 +24,7 @@ APP_SUBTITLE = "Contacts • Notes"
 APP_HINT = f'Type "{GREEN_FILL}help{RESET}" to see all commands'
 HELP_GLOBAL_HINT = f'Type "{GREEN_FILL}help-global{RESET}" to see global commands'
 HELP_CONTACTS_HINT = f'Type "{GREEN_FILL}help-contacts{RESET}" to see contacts commands'
+HELP_GROUPS_HINT = f'Type "{GREEN_FILL}help-groups{RESET}" to see groups commands'
 HELP_NOTES_HINT = f'Type "{GREEN_FILL}help-notes{RESET}" to see notes commands'
 HELP_TAGS_HINT = f'Type "{GREEN_FILL}help-tags{RESET}" to see tags commands'
 
@@ -37,8 +38,6 @@ COMMAND_GROUPS = [
             ("help-contacts", "Show contacts commands", "help-contacts"),
             ("help-notes", "Show notes commands", "help-notes"),
             ("help-tags", "Show tags commands", "help-tags"),
-            ("all-contacts", "Show all contacts", "all-contacts"),
-            ("search-contact", "Search contacts by query", "search-contact John"),
             ("close", "Close the bot", "close"),
             ("exit", "Exit the bot", "exit"),
         ],
@@ -47,6 +46,8 @@ COMMAND_GROUPS = [
         "Contacts",
         [
             ("add-contact", "Add a new contact", "add-contact John 1234567890 john@mail.com"),
+            ("all-contacts", "Show all contacts", "all-contacts"),
+            ("search-contact", "Search contacts by query", "search-contact John"),
             ("edit-contact", "Edit a contact field by ID", "edit-contact <id> email new@mail.com"),
             ("edit-phone", "Change the primary phone", "edit-phone <id> 0991234567"),
             ("edit-email", "Change the contact email", "edit-email <id> new@mail.com"),
@@ -59,6 +60,17 @@ COMMAND_GROUPS = [
             ("add-birthday", "Add a birthday", "add-birthday <id> 01.01.2000"),
             ("show-birthday", "Show the birthday", "show-birthday <id>"),
             ("all-birthdays", "Show upcoming birthdays", "all-birthdays"),
+        ],
+    ),
+    (
+        "Groups",
+        [
+            ("add-contact-group", "Add a contact to a group", "add-contact-group <contact_id> <group_name>"),
+            ("add-contacts-to-group", "Add multiple contacts to a group", "add-contacts-to-group <group_name> <contact_id1> <contact_id2>"),
+            ("delete-contact-group", "Delete a contact group", "delete-contact-group <group_name>"),
+            ("delete-contact-groups", "Delete all contact groups", "delete-contact-groups"),
+            ("show-contact-groups", "Show all contact groups", "show-contact-groups"),
+            ("search-contacts-by-group", "Search contacts by group name", "search-contacts-by-group <group_name>"),
         ],
     ),
     (
@@ -92,6 +104,7 @@ def build_welcome_message() -> str:
         f"{APP_HINT}\n"
         f"{HELP_GLOBAL_HINT}\n"
         f"{HELP_CONTACTS_HINT}\n"
+        f"{HELP_GROUPS_HINT}\n"
         f"{HELP_NOTES_HINT}\n"
         f"{HELP_TAGS_HINT}"
     )
@@ -103,6 +116,7 @@ def build_help_message(section: str | None = None) -> str:
     section_hints = {
         "global": HELP_GLOBAL_HINT,
         "contacts": HELP_CONTACTS_HINT,
+        "groups": HELP_GROUPS_HINT,
         "notes": HELP_NOTES_HINT,
         "tags": HELP_TAGS_HINT,
     }
